@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "vue.vscode-typescript-vue-plugin",
+        "koroFileHeader.vscode-fileheader",
+        "esbenp.prettier-vscode",
+        "Vue.volar"
+    ],
+    "unwantedRecommendations": ["octref.vetur"]
+}

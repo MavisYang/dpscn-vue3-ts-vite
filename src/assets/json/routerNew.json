@@ -1,0 +1,140 @@
+{
+    "code": "0",
+    "msg": "SUCCESS",
+    "data": [
+        {
+            "menuId": 650,
+            "menuName": "缓存查询",
+            "tenantId": 22,
+            "menuCode": "cacheQuery",
+            "menuType": 1,
+            "sort": 4,
+            "subNodes": [
+                {
+                    "menuId": 652,
+                    "menuName": "消费端缓存查询",
+                    "tenantId": 22,
+                    "menuCode": "clientCacheList",
+                    "menuType": 1,
+                    "urlAddress": "console/views/client/ClientCacheDataList.vue",
+                    "subNodes": [
+                        {
+                            "menuId": 670,
+                            "menuName": "缓存数据核对",
+                            "tenantId": 22,
+                            "menuCode": "client-cache-compare",
+                            "menuType": 2,
+                            "sort": 4,
+                            "parentId": 652
+                        },
+                        {
+                            "menuId": 666,
+                            "menuName": "查看占用内存",
+                            "tenantId": 22,
+                            "menuCode": "client-cache-memorysize",
+                            "menuType": 2,
+                            "sort": 3,
+                            "parentId": 652
+                        },
+                        {
+                            "menuId": 665,
+                            "menuName": "版本核对",
+                            "tenantId": 22,
+                            "menuCode": "client-cache-checkversion",
+                            "menuType": 2,
+                            "sort": 2,
+                            "parentId": 652
+                        },
+                        {
+                            "menuId": 664,
+                            "menuName": "查询",
+                            "tenantId": 22,
+                            "menuCode": "client-cache-query",
+                            "menuType": 2,
+                            "sort": 1,
+                            "parentId": 652
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "menuId": 651,
+            "menuName": "服务端缓存查询",
+            "tenantId": 22,
+            "menuCode": "serverCacheList",
+            "menuType": 1,
+            "sort": 1,
+            "urlAddress": "console/views/server/CacheTableDataList.vue",
+            "subNodes": [
+                {
+                    "menuId": 663,
+                    "menuName": "版本核对",
+                    "tenantId": 22,
+                    "menuCode": "server-cache-checkversion",
+                    "menuType": 2,
+                    "sort": 2,
+                    "parentId": 651
+                },
+                {
+                    "menuId": 653,
+                    "menuName": "查询",
+                    "tenantId": 22,
+                    "menuCode": "server-cache-query",
+                    "menuType": 2,
+                    "sort": 1,
+                    "parentId": 651
+                }
+            ]
+        },
+        {
+            "menuId": 649,
+            "menuName": "数据下发管理",
+            "tenantId": 22,
+            "menuCode": "cacheDeliveryTask",
+            "menuType": 1,
+            "sort": 3,
+            "urlAddress": "console/views/server/CacheDeliveryTaskList.vue",
+            "subNodes": [
+                {
+                    "menuId": 672,
+                    "menuName": "查看缓存任务详情",
+                    "tenantId": 22,
+                    "menuCode": "cache-task-detail",
+                    "menuType": 2,
+                    "sort": 2,
+                    "urlAddress": "console/views/server/CacheDeliveryTaskDetail.vue"
+                },
+                {
+                    "menuId": 671,
+                    "menuName": "查询",
+                    "tenantId": 22,
+                    "menuCode": "cache-task-query",
+                    "menuType": 2,
+                    "sort": 1,
+                    "parentId": 649
+                }
+            ]
+        },
+        {
+            "menuId": 648,
+            "menuName": "消费实例",
+            "tenantId": 22,
+            "menuCode": "clientInstance",
+            "menuType": 1,
+            "sort": 2,
+            "urlAddress": "console/views/client/ClientHeartList.vue",
+            "subNodes": [
+                {
+                    "menuId": 675,
+                    "menuName": "查询",
+                    "tenantId": 22,
+                    "menuCode": "client-instance-query",
+                    "menuType": 2,
+                    "sort": 1,
+                    "parentId": 648
+                }
+            ]
+        }
+    ]
+}
