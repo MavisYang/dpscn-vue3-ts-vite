@@ -2,12 +2,13 @@
  * @Author: yangmiaomiao
  * @Date: 2024-05-27 11:18:35
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-03-17 16:45:02
+ * @LastEditTime: 2026-03-30 16:15:51
  * @Description:
  */
 import { createApp } from 'vue'
 import App from './App.vue'
-
+import Antd from 'ant-design-vue' // 引入
+import 'ant-design-vue/dist/reset.css' // 样式
 import '@/styles/reset.scss' // reset style sheet
 import '@/styles/common.scss' // CSS common style sheet
 import '@/assets/iconfont/iconfont.scss' // iconfont css
@@ -39,4 +40,4 @@ Object.keys(Icons).forEach((key) => {
     app.component(key, Icons[key as keyof typeof Icons])
 })
 
-app.use(ElementPlus).use(directives).use(router).use(I18n).use(pinia).mount('#app')
+app.use(Antd).use(ElementPlus).use(directives).use(router).use(I18n).use(pinia).mount('#app')

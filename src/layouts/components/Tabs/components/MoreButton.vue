@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2024-02-04 15:44:58
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2024-05-28 20:28:06
+ * @LastEditTime: 2026-04-01 10:12:53
  * @Description: 
 -->
 <template>
@@ -82,6 +82,4 @@ const closeAllTab = () => {
 }
 </script>
 
-<style scoped lang="scss">
-@import '../index.scss';
-</style>
+<style scoped lang="scss"></style>

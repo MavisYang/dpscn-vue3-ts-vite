@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2023-12-28 20:30:16
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-03-17 10:36:14
+ * @LastEditTime: 2026-04-01 13:34:07
  * @Description:
  */
 import vue from '@vitejs/plugin-vue'
@@ -65,6 +65,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
                 scss: {
                     additionalData: `$primaryColor: ${viteEnv.VITE_PRIMARY_COLOR};@use "@/styles/var.scss" as *;`,
                 },
+                sass: { api: 'modern' }, // 导入sass预编译程序
             },
         },
         resolve: {
