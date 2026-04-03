@@ -82,6 +82,53 @@
                     }
                 }
             ]
+        },
+        {
+            "path": "/ARM",
+            "name": "ARMMessage",
+            "component": "/envResources/index",
+            "meta": {
+                "icon": "MostlyCloudy",
+                "title": "APAAS管理",
+                "isLink": "",
+                "isHide": false,
+                "isFull": false,
+                "isAffix": false,
+                "isKeepAlive": true,
+                "isTab": true
+            },
+            "children": [
+                {
+                    "path": "/ARM/envResources",
+                    "name": "envResources",
+                    "component": "/envResources/index",
+                    "meta": {
+                        "icon": "",
+                        "title": "环境资源管理",
+                        "isLink": "",
+                        "isHide": false,
+                        "isFull": false,
+                        "isAffix": false,
+                        "isKeepAlive": true,
+                        "isTab": true
+                    }
+                },
+                {
+                    "path": "/ARM/physicalDeployment",
+                    "name": "physicalDeployment",
+                    "component": "/physicalDeployment/index",
+                    "meta": {
+                        "icon": "",
+                        "title": "物理部署映射",
+                        "isLink": "",
+                        "isHide": false,
+                        "isFull": false,
+                        "isAffix": false,
+                        "isKeepAlive": true,
+                        "isTab": true
+                    }
+                }
+            ]
         }
     ]
 }

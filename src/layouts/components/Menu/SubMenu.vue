@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2024-05-27 11:31:11
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2024-06-19 17:06:34
+ * @LastEditTime: 2026-04-03 17:31:40
  * @Description: 
 -->
 <template>
@@ -10,7 +10,7 @@
         <el-sub-menu v-if="subItem.children?.length" :index="subItem.path">
             <template #title>
                 <el-icon v-if="subItem.meta.icon">
-                    <component :is="subItem.meta.icon"></component>
+                    <component :key="subItem.name" :is="subItem.meta.icon"></component>
                 </el-icon>
                 <span class="sle">{{ subItem.meta.title }}</span>
             </template>
@@ -18,7 +18,7 @@
         </el-sub-menu>
         <el-menu-item v-else :index="subItem.path" @click="handleClickMenu(subItem)">
             <el-icon v-if="subItem.meta.icon">
-                <component :is="subItem.meta.icon"></component>
+                <component :key="subItem.name" :is="subItem.meta.icon"></component>
             </el-icon>
             <template #title>
                 <span class="sle">{{ subItem.meta.title }}</span>

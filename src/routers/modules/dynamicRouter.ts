@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2024-02-19 09:27:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2024-06-19 17:25:01
+ * @LastEditTime: 2026-04-03 17:18:29
  * @Description:
  */
 import router from '@/routers/index'
@@ -52,6 +52,8 @@ export const initDynamicRouter = async () => {
                 router.addRoute('layout', item as unknown as RouteRecordRaw)
             }
         })
+
+        console.log(authStore.flatMenuListGet, 'authStore.flatMenuListGet')
     } catch (error) {
         // 当按钮 || 菜单请求出错时，重定向到登陆页
         userStore.setToken('')
