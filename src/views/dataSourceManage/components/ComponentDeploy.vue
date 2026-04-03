@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-03-31 08:56:41
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-02 14:32:15
+ * @LastEditTime: 2026-04-03 09:48:34
  * @Description: 
 -->
 <template>
@@ -86,7 +86,7 @@
 
 <script setup lang="ts">
 // 组件部署资源
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { formatListDisplay } from '../utils/formatHelper'
 import ComponentEdit from './ComponentEdit.vue'
 interface FileSystem {
@@ -132,6 +132,7 @@ interface TableItem {
     [key: string]: any
 }
 
+const props = defineProps(['envId'])
 const emit = defineEmits(['update:import'])
 const loading = ref(false)
 const searchForm = reactive({
@@ -205,9 +206,9 @@ const columns = [
     },
 ]
 
-const getList = () => {
-    console.log(searchForm, 'searchForm.value')
-
+const getList = async () => {
+    console.log(props.envId, '11111getList--envId')
+    if (!props.envId) return
     loading.value = true
     // 模拟 18 条数据
     const total = 18
@@ -516,14 +517,32 @@ const handleEdit = (record: TableItem, type: string) => {
 }
 const handleDelete = (record: TableItem) => {
     console.log('删除', record)
+    // 最后一页最有一条删除后，页码自动回退
+    if (pagination.current > 1 && dataSource.value.length === 1) {
+        pagination.current -= 1
+    }
+    getList()
 }
 const handleImport = () => {
     console.log('资源导入')
     emit('update:import')
 }
+
 onMounted(() => {
-    console.log('222222onMounted')
+    console.log('1111111onMounted')
     getList()
+})
+watch(
+    () => props.envId,
+    (newEnvId) => {
+        if (newEnvId) {
+            console.log(newEnvId, 'newEnvId')
+            getList()
+        }
+    },
+)
+defineExpose({
+    getList,
 })
 </script>
 

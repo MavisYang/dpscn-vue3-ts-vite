@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-03-31 08:56:41
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-02 14:30:37
+ * @LastEditTime: 2026-04-03 09:49:19
  * @Description: 
 -->
 <template>
@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 // 基建部署资源
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, watch } from 'vue'
 import InfrastructureTable from './InfrastructureTable.vue'
 import InfrastructureEdit from './InfrastructureEdit.vue'
 interface TabItem {
@@ -45,6 +45,7 @@ interface TableItem {
     status: string
     [key: string]: any
 }
+const props = defineProps(['envId'])
 
 const activeKey = ref('')
 const tabs = ref()
@@ -57,10 +58,6 @@ const searchForm = reactive({
     status: null,
 })
 const loading = ref(false)
-
-onMounted(() => {
-    getTabs()
-})
 
 // 获取tabs
 const getTabs = () => {
@@ -150,16 +147,13 @@ const handleDelete = (record: any) => {
 }
 
 const getList = () => {
-    console.log('搜索', searchForm)
-    console.log('获取列表数据', activeKey.value)
+    console.log(props.envId, '2222getList--envId')
 
     const { page } = tableData[activeKey.value]
     const params = {
         pageNum: page.current,
         pageSize: page.pageSize,
     }
-    console.log(activeKey.value, tableData[activeKey.value], params, '------')
-
     loading.value = true
     const res = {
         code: '',
@@ -218,11 +212,27 @@ const getList = () => {
             showSizeChanger: true,
         },
     }
-    console.log(tableData, '基建部署资源组件已挂载')
     setTimeout(() => {
         loading.value = false
     }, 500)
 }
+
+onMounted(() => {
+    console.log('2222222onMounted')
+    getTabs()
+})
+watch(
+    () => props.envId,
+    (newEnvId) => {
+        if (newEnvId) {
+            console.log(newEnvId, 'newEnvId')
+            getList()
+        }
+    },
+)
+defineExpose({
+    getList,
+})
 </script>
 
 <style scoped></style>
