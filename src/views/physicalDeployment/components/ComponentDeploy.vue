@@ -1,55 +1,28 @@
 <template>
-    <div class="deployment-page component-config">
+    <div class="deployment-page">
         <div class="page-header">配置详情</div>
-        <a-collapse v-model:activeKey="czActiveKey" class="region-collapse">
-            <a-collapse-panel v-for="value in czData" :key="value.key" :header="value.title">
+        <a-collapse v-model:activeKey="czActiveKey" class="deployment-collapse">
+            <a-collapse-panel v-for="(value, index) in czData" :key="value.key" :header="value.title">
                 <ComponentTable
                     :key="`${value.key}_component`"
                     :tableColumns="tableColumns"
                     :dataSource="value.tableData"
-                    @update:view="handleView"
-                    @update:edit="handleSelectHost"
-                    @update:delete="
-                        (tableIndex: string, resourceIndex: string) =>
-                            handleDelete(tableIndex, resourceIndex, value.key)
-                    "
+                    :dataIndex="index"
+                    @update:view="handleEdit"
+                    @update:edit="handleEdit"
+                    @update:delete="handleDelete"
                 />
             </a-collapse-panel>
         </a-collapse>
-        <ComponentEdit ref="viewOrEditRef" @update:list="handleUpdateData" :data="editData" />
+        <ComponentEdit ref="viewOrEditRef" @update:list="handleUpdateData" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import ComponentTable from './ComponentTable'
 import ComponentEdit from './ComponentEdit'
-// 表格列类型定义
-interface ResourceItem {
-    hostName: string
-    ip: string
-    cpu: string
-    memory: string
-    os: string
-    allocatedFileSystem: string
-    allocatedSoftware: string
-}
-interface TableDataItem {
-    id: number
-    group: string
-    component: string
-    spec: string
-    hostSpec: string
-    fileSystem: string
-    software: string
-    instanceCount: number
-    resource: ResourceItem[]
-}
-interface DataItem {
-    key: string
-    title: string
-    tableData: TableDataItem[]
-}
+import { CZDataItem, TableDataItem, ResourceItem } from '../types'
 
 const tableColumns = [
     {
@@ -155,24 +128,26 @@ const tableColumns = [
     },
 ]
 
-const czActiveKey = ref([''])
-const czData = ref()
-
-const resourceInit = ref({
+const czActiveKey = ref<string[]>([''])
+const czData = ref<CZDataItem[]>([])
+const resourceInit = ref<ResourceItem>({
+    id: '',
     hostName: '',
     ip: '',
     cpu: '',
     memory: '',
     os: '',
+    osVersion: '',
     allocatedFileSystem: '',
     allocatedSoftware: '',
 })
-const processData = (data: DataItem[]) => {
+const processData = (data: CZDataItem[]) => {
     return data.map((item) => {
         // 处理每个 tableData 项
-        const processedTableData = item.tableData.map((record) => {
+        const processedTableData = item.tableData.map((record: TableDataItem) => {
             // 创建空表格数据数组
             const emptyTableData = Array.from({ length: record.instanceCount - record.resource.length }, () => ({
+                id: Math.random().toString().slice(2),
                 ...resourceInit.value,
             }))
 
@@ -204,38 +179,25 @@ const getList = () => {
                     hostSpec: '4核, 8G',
                     fileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
                     software: 'tomcav7.8\ntomcav7.8',
-                    instanceCount: 2,
+                    instanceCount: 3,
+                    version: '1.1.0',
+                    cpu: '2C',
+                    memory: '4G',
+                    osName: 'CentOS',
+                    osVersion: '7.6',
                     resource: [
                         {
+                            id: '1111',
                             hostName: '主机',
                             ip: '123.123.123.123',
                             cpu: '是',
                             memory: '撒',
                             os: 'a s lkdfj',
-                            allocatedFileSystem: 'allocatedFileSystem',
-                            allocatedSoftware: 'allocatedSoftware',
-                        },
-                        {
-                            hostName: '主机222',
-                            ip: '123.123.123.123',
-                            cpu: '是',
-                            memory: '撒',
-                            os: 'a s lkdfj',
-                            allocatedFileSystem: 'allocatedFileSystem',
-                            allocatedSoftware: 'allocatedSoftware2',
+                            osVersion: '7.6',
+                            allocatedFileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
+                            allocatedSoftware: 'tomcav7.8\ntomcav7.8',
                         },
                     ],
-                },
-                {
-                    id: 2,
-                    group: 'GRAY1111',
-                    component: 'APAAS.AUTH.service\n1.2',
-                    spec: '2核, 4G * 2',
-                    hostSpec: '4核, 8G',
-                    fileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
-                    software: 'tomcav7.8\ntomcav7.8',
-                    instanceCount: 2,
-                    resource: [],
                 },
             ],
         },
@@ -244,63 +206,79 @@ const getList = () => {
             title: '全行/Region/AZ/LDC/SR/CZ2',
             tableData: [
                 {
-                    id: 111,
-                    group: 'GRAY2222',
-                    component: 'APAAS.AUTH.service\n1.2',
+                    id: 134,
+                    group: 'NORMAL12',
+                    component: 'APAAS.AUTH.service\n1.12',
                     spec: '2核, 4G * 2',
                     hostSpec: '4核, 8G',
                     fileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
                     software: 'tomcav7.8\ntomcav7.8',
                     instanceCount: 3,
-                    resource: [
-                        {
-                            hostName: '主机3',
-                            ip: '123.123.123.123',
-                            cpu: '是',
-                            memory: '撒',
-                            os: 'a s lkdfj',
-                            allocatedFileSystem: 'allocatedFileSystem',
-                            allocatedSoftware: 'allocatedSoftware3',
-                        },
-                        {
-                            hostName: '主机3',
-                            ip: '123.123.123.123',
-                            cpu: '是',
-                            memory: '撒',
-                            os: 'a s lkdfj',
-                            allocatedFileSystem: 'allocatedFileSystem',
-                            allocatedSoftware: 'allocatedSoftware33',
-                        },
-                    ],
+                    version: '1.1.0',
+                    cpu: '2C',
+                    memory: '4G',
+                    osName: 'CentOS',
+                    osVersion: '7.6',
+                    resource: [],
+                },
+                {
+                    id: 13434,
+                    group: 'NORMAL124',
+                    component: 'APAAS.AUTH.service\n1.12',
+                    spec: '2核, 4G * 2',
+                    hostSpec: '4核, 8G',
+                    fileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
+                    software: 'tomcav7.8\ntomcav7.8',
+                    instanceCount: 3,
+                    version: '1.1.0',
+                    cpu: '2C',
+                    memory: '4G',
+                    osName: 'CentOS',
+                    osVersion: '7.6',
+                    resource: [],
                 },
             ],
         },
     ]
 
     czData.value = processData(data)
-    console.log(czData.value, '11111czData.value')
     czActiveKey.value = data.map((v) => v.key)
 }
 
-const editData = ref({})
 const viewOrEditRef = ref<InstanceType<typeof ComponentEdit>>()
-// 操作：查看机房配置
-const handleView = (record: any, index: number) => {
-    viewOrEditRef.value?.showModel(record, 'view')
+const listIndexs = ref<any>({
+    dataIndex: 0,
+    tableIndex: 0,
+    resourceIndex: 0,
+})
+// 操作：查看/选择主机
+const handleEdit = (type: string, record: any, tableIndex: number, resourceIndex: number, dataIndex: number) => {
+    const currentRecord = {
+        ...record,
+        resource: [record.resource[resourceIndex]],
+    }
+    listIndexs.value = {
+        dataIndex,
+        tableIndex,
+        resourceIndex,
+    }
+    viewOrEditRef.value?.showModel(currentRecord, type)
 }
-// 操作：选择主机
-const handleSelectHost = (record: any, index: number) => {
-    viewOrEditRef.value?.showModel(record, 'edit')
+
+// 删除机房配置
+const handleDelete = (tableIndex: number, resourceIndex: number, dataIndex: number) => {
+    // 赋值resource中的resourceIndex初始化数据
+    const resourceArr = czData.value[dataIndex].tableData[tableIndex].resource
+    resourceArr.splice(resourceIndex, 1, { ...resourceInit.value })
 }
-// 操作：删除机房配置
-const handleDelete = (tableIndex: string, resourceIndex: string, czKey: string) => {
-    console.log(tableIndex, resourceIndex, czKey, 'handleDelete')
-    // 清空resource中的resourceIndex数据
-    const czIndex = czData.value.findIndex((v: DataItem) => v.key === czKey)
-    czData.value[czIndex].tableData[tableIndex].resource[resourceIndex] = resourceInit.value
+// 编辑机房配置更新数据
+const handleUpdateData = (newItem: TableDataItem) => {
+    const { dataIndex, tableIndex, resourceIndex } = listIndexs.value
+    const resourceArr = czData.value[dataIndex].tableData[tableIndex].resource
+    // 使用 splice 替换，既修改了原数组，也是响应式的
+    resourceArr.splice(resourceIndex, 1, { ...newItem.resource[0] })
     console.log(czData.value, 'czData.value')
 }
-const handleUpdateData = () => {}
 
 onMounted(() => {
     getList()
@@ -329,7 +307,7 @@ onMounted(() => {
 }
 
 /* 折叠面板样式 */
-.region-collapse {
+.deployment-collapse {
     background: #ffffff;
     margin: 8px;
     border: 1px solid #eef0f2;

@@ -2,11 +2,10 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-08 10:06:22
+ * @LastEditTime: 2026-04-08 18:49:05
  * @Description: 
 -->
 <template>
-    <!-- 表格主体（动态渲染） -->
     <div class="deployment-table-body">
         <div class="table-row">
             <template v-for="columns in tableColumns" :key="columns.key">
@@ -31,36 +30,18 @@
                                 <div class="resource-info">
                                     <div
                                         v-for="columnsChild in columns.children"
-                                        class="table-body-cell"
+                                        class="table-body-cell resource-cell"
                                         :key="columnsChild.key"
                                         :class="[
                                             columnsChild.key === 'hostName' && !resourceItem.hostName
                                                 ? 'empty-resource'
                                                 : '',
-                                            columnsChild.key === 'action' ? 'resource-action' : 'resource-cell',
                                         ]"
                                         :style="{ width: columnsChild.width + 'px' }"
                                     >
                                         <template v-if="columnsChild.key === 'hostName'">
                                             {{ resourceItem.hostName || '请选择主机' }}
                                         </template>
-                                        <!-- <template v-else-if="columnsChild.key === 'action'">
-                                            <template v-if="resourceItem.hostName">
-                                                <a class="action-link view" @click="handleView(resourceItem)">查看</a>
-                                                <a
-                                                    class="action-link delete"
-                                                    @click="handleDelete(tableItem, resourceIndex)"
-                                                    >删除</a
-                                                >
-                                            </template>
-                                            <template v-else>
-                                                <a
-                                                    class="action-link select"
-                                                    @click="handleSelectHost(tableItem, resourceIndex)"
-                                                    >选择主机</a
-                                                >
-                                            </template>
-                                        </template> -->
                                         <template v-else>
                                             {{ resourceItem[columnsChild.key || columnsChild.dataIndex] }}
                                         </template>
@@ -68,7 +49,9 @@
                                 </div>
                                 <div class="table-body-cell col-action">
                                     <template v-if="resourceItem.hostName">
-                                        <a class="action-link view" @click="emit('update:view', tableItem, tableIndex)"
+                                        <a
+                                            class="action-link view"
+                                            @click="emit('update:view', tableItem, tableIndex, resourceIndex)"
                                             >查看</a
                                         >
                                         <a
@@ -78,7 +61,9 @@
                                         >
                                     </template>
                                     <template v-else>
-                                        <a class="action-link select" @click="emit('update:edit', tableIndex)"
+                                        <a
+                                            class="action-link select"
+                                            @click="emit('update:edit', tableItem, tableIndex, resourceIndex)"
                                             >选择主机</a
                                         >
                                     </template>
@@ -89,59 +74,6 @@
                     </template>
                 </div>
             </template>
-
-            <!-- <div class="body-group component-group">
-                <div class="table-body-cell col-group">{{ tableItem.group }}</div>
-                <div class="table-body-cell col-component">{{ tableItem.component }}</div>
-                <div class="table-body-cell col-spec">{{ tableItem.spec }}</div>
-            </div>
-
-            <div class="body-group expected-group">
-                <div class="table-body-cell col-host-spec">{{ tableItem.hostSpec }}</div>
-                <div class="table-body-cell col-fs">{{ tableItem.fileSystem }}</div>
-                <div class="table-body-cell col-software">{{ tableItem.software }}</div>
-                <div class="table-body-cell col-instance">
-                    {{ tableItem.instanceCount }}
-                </div>
-            </div> -->
-
-            <!-- <div class="body-group resources-group">
-                <div
-                    class="resource-row"
-                    v-for="(resourceItem, resourceIndex) in tableItem.resource"
-                    :key="resourceIndex"
-                >
-                    <div class="resource-info">
-                        <div
-                            class="table-body-cell resource-cell col-hostname"
-                            :class="[resourceItem.hostName ? '' : 'empty-resource']"
-                        >
-                            {{ resourceItem.hostName || '请选择主机' }}
-                        </div>
-                        <div class="table-body-cell resource-cell col-ip">{{ resourceItem.ip }}</div>
-                        <div class="table-body-cell resource-cell col-cpu">{{ resourceItem.cpu }}</div>
-                        <div class="table-body-cell resource-cell col-memory">{{ resourceItem.memory }}</div>
-                        <div class="table-body-cell resource-cell col-os">{{ resourceItem.os }}</div>
-                        <div class="table-body-cell resource-cell col-allocated-fs">
-                            {{ resourceItem.allocatedFileSystem }}
-                        </div>
-                        <div class="table-body-cell resource-cell col-allocated-software">
-                            {{ resourceItem.allocatedSoftware }}
-                        </div>
-                    </div>
-                    <div class="table-body-cell resource-action col-action">
-                        <template v-if="resourceItem.hostName">
-                            <a class="action-link view" @click="handleView(resourceItem)">查看</a>
-                            <a class="action-link delete" @click="handleDelete(tableItem, resourceIndex)">删除</a>
-                        </template>
-                        <template v-else>
-                            <a class="action-link select" @click="handleSelectHost(tableItem, resourceIndex)"
-                                >选择主机</a
-                            >
-                        </template>
-                    </div>
-                </div> 
-            </div>-->
         </div>
     </div>
 </template>
@@ -175,7 +107,7 @@ const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
         width: 120px;
         flex-shrink: 0;
     }
-
+    /*==动态设置的class==*/
     .expected-group {
         position: relative;
         &::before {
@@ -233,6 +165,7 @@ const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
             color: #c9ccd8 !important;
         }
     }
+    /*==动态设置的class==*/
     /* 操作列 */
     .col-action {
         gap: 10px;

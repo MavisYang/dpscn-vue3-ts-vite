@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:38:44
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-08 09:31:29
+ * @LastEditTime: 2026-04-08 18:46:20
  * @Description: 
 -->
 <template>
@@ -26,38 +26,6 @@
                     </div>
                 </div>
             </template>
-            <!-- <div class="header-group component-group">
-                <div class="group-title" style="border: none"></div>
-                <div class="group-row">
-                    <div class="table-header-cell col-group">GROUP</div>
-                    <div class="table-header-cell col-component">组件和版本</div>
-                    <div class="table-header-cell col-spec">规格及实例数</div>
-                </div>
-            </div>
-
-            <div class="header-group expected-group">
-                <div class="group-title">期望规格</div>
-                <div class="group-row">
-                    <div class="table-header-cell col-host-spec">主机规格</div>
-                    <div class="table-header-cell col-fs">文件系统</div>
-                    <div class="table-header-cell col-software">安装软件</div>
-                    <div class="table-header-cell col-instance">实例数</div>
-                </div>
-            </div>
-
-            <div class="header-group resources-group">
-                <div class="group-title">已分配资源</div>
-                <div class="group-row">
-                    <div class="table-header-cell col-hostname">主机名</div>
-                    <div class="table-header-cell col-ip">IP</div>
-                    <div class="table-header-cell col-cpu">CPU</div>
-                    <div class="table-header-cell col-memory">内存</div>
-                    <div class="table-header-cell col-os">操作系统及版本</div>
-                    <div class="table-header-cell col-allocated-fs">文件系统</div>
-                    <div class="table-header-cell col-allocated-software">安装软件</div>
-                    <div class="table-header-cell col-action">操作</div>
-                </div>
-            </div> -->
         </div>
     </div>
 </template>
@@ -92,6 +60,7 @@ const props = defineProps(['tableColumns'])
         height: 26px;
         line-height: 26px;
     }
+    /*==动态设置的class==*/
     .component-group {
         background-color: #fbfcff;
     }
@@ -108,11 +77,7 @@ const props = defineProps(['tableColumns'])
             border-bottom: 1px solid rgb(19 194 194 / 20%);
         }
     }
-
-    .empty-resource {
-        color: #c9ccd8 !important;
-    }
-
+    /*==动态设置的class==*/
     .action-cell {
         background-color: #fff;
     }
