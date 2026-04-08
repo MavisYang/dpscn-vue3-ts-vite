@@ -114,12 +114,27 @@
                     }
                 },
                 {
+                    "path": "/ARM/mappingDeployment",
+                    "name": "mappingDeployment",
+                    "component": "/mappingDeployment/index",
+                    "meta": {
+                        "icon": "",
+                        "title": "物理部署映射",
+                        "isLink": "",
+                        "isHide": false,
+                        "isFull": false,
+                        "isAffix": false,
+                        "isKeepAlive": true,
+                        "isTab": true
+                    }
+                },
+                {
                     "path": "/ARM/physicalDeployment",
                     "name": "physicalDeployment",
                     "component": "/physicalDeployment/index",
                     "meta": {
                         "icon": "",
-                        "title": "物理部署映射",
+                        "title": "物理部署映射22",
                         "isLink": "",
                         "isHide": false,
                         "isFull": false,
