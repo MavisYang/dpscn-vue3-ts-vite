@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-08 18:49:05
+ * @LastEditTime: 2026-04-09 10:21:33
  * @Description: 
 -->
 <template>
@@ -33,14 +33,20 @@
                                         class="table-body-cell resource-cell"
                                         :key="columnsChild.key"
                                         :class="[
-                                            columnsChild.key === 'hostName' && !resourceItem.hostName
+                                            (columnsChild.key === 'hostName' && !resourceItem.hostName) ||
+                                            (columnsChild.key === 'ip' && !resourceItem.ip)
                                                 ? 'empty-resource'
                                                 : '',
                                         ]"
                                         :style="{ width: columnsChild.width + 'px' }"
                                     >
-                                        <template v-if="columnsChild.key === 'hostName'">
+                                        <template v-if="pageType === 'component' && columnsChild.key === 'hostName'">
                                             {{ resourceItem.hostName || '请选择主机' }}
+                                        </template>
+                                        <template
+                                            v-else-if="pageType === 'infrastructure' && columnsChild.key === 'ip'"
+                                        >
+                                            {{ resourceItem.ip || '请选择基建服务' }}
                                         </template>
                                         <template v-else>
                                             {{ resourceItem[columnsChild.key || columnsChild.dataIndex] }}
@@ -48,7 +54,7 @@
                                     </div>
                                 </div>
                                 <div class="table-body-cell col-action">
-                                    <template v-if="resourceItem.hostName">
+                                    <template v-if="resourceItem.hostName || resourceItem.ip">
                                         <a
                                             class="action-link view"
                                             @click="emit('update:view', tableItem, tableIndex, resourceIndex)"
@@ -64,7 +70,7 @@
                                         <a
                                             class="action-link select"
                                             @click="emit('update:edit', tableItem, tableIndex, resourceIndex)"
-                                            >选择主机</a
+                                            >选择{{ pageType === 'component' ? '主机' : '基建服务' }}</a
                                         >
                                     </template>
                                 </div>
@@ -79,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps(['tableItem', 'tableIndex', 'tableColumns'])
+const props = defineProps(['tableItem', 'tableIndex', 'tableColumns', 'pageType'])
 const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
 </script>
 

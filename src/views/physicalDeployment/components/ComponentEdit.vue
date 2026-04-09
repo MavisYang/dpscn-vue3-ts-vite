@@ -2,11 +2,11 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-08 18:50:01
+ * @LastEditTime: 2026-04-09 14:15:49
  * @Description: 
 -->
 <template>
-    <a-modal v-model:open="open" class="env-model" :title="title" :width="900">
+    <a-modal v-model:open="open" class="env-model" :title="title" :width="1200">
         <!-- 1. 组件信息 -->
         <div class="host-modal-section">
             <div class="section-title">组件信息</div>
@@ -201,8 +201,8 @@
                 >
                     <template #bodyCell="{ column, record }">
                         <template v-if="column.dataIndex === 'isRelated'">
-                            <span class="is-related yes" v-if="record.isRelated === '1'">是</span>
-                            <span class="is-related no" v-else>否</span>
+                            <span class="host-is-related yes" v-if="record.isRelated === '1'">是</span>
+                            <span class="host-is-related no" v-else>否</span>
                         </template>
                         <template v-else-if="column.dataIndex === 'action'">
                             <a @click="toggleExpand(record)">
@@ -220,11 +220,11 @@
                     <template #expandedRowRender="{ record }">
                         <div class="host-expand">
                             <div class="host-detail">
-                                <div class="sub-host-title">主机信息:</div>
+                                <div class="sub-host-title">主机名：</div>
                                 <div class="sub-host-desc">
                                     <div class="list-row">
                                         <div class="list-item">
-                                            <span class="label">主机名：</span>{{ record.hostName }}
+                                            {{ record.hostName }}
                                         </div>
                                         <div class="list-item"><span class="label">ip：</span>{{ record.ip }}</div>
                                         <div class="list-item"><span class="label">cpu：</span>{{ record.cpu }}</div>
@@ -490,7 +490,7 @@ const handleConfirm = () => {
         }
     }
 }
-.is-related {
+.host-is-related {
     padding: 2px 10px;
     border-radius: 6px;
 

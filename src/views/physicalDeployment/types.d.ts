@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-08 16:19:35
+ * @LastEditTime: 2026-04-09 15:03:03
  * @Description:
  */
 
@@ -14,8 +14,9 @@ export interface CZDataItem {
     title: string
     tableData: TableDataItem[]
 }
+
 export interface TableItem {
-    id: number
+    id: number | string
     group: string
     component: string
     spec: string
@@ -27,7 +28,7 @@ export interface TableItem {
 }
 
 export interface ResourceItem {
-    id: string | number
+    id: string
     hostName: string
     ip: string
     cpu: string
@@ -39,7 +40,7 @@ export interface ResourceItem {
 }
 
 export interface TableDataItem {
-    id: number
+    id: number | string
     group: string
     component: string
     spec: string
@@ -50,7 +51,7 @@ export interface TableDataItem {
     resource: ResourceItem[]
 }
 export interface HostItem {
-    id: string | number
+    id: number | string
     isRelated: string
     ip: string
     hostName: string
@@ -62,6 +63,7 @@ export interface HostItem {
     software: string
     fileSystemList: FileSystemItem[]
     softwareList: SoftwareItem[]
+    [key: string]: any
 }
 
 export interface FileSystemItem {
@@ -76,4 +78,51 @@ export interface SoftwareItem {
     version: string
     type: string
     remark: string
+}
+
+export interface ServiceType {
+    label: string
+    value: string
+}
+
+export interface CZINFDataItem {
+    key: string
+    title: string
+    tableData: CZINFTableDataItem[]
+}
+
+export interface CZINFTableDataItem {
+    id: number | string
+    ip: string
+    port: string
+    dbVersion: string
+    os: string
+    instanceName: string
+    otherSpec: string
+    instanceCount: number
+    isRelated: string
+    resource: ResourceINFItem[]
+    database: DatabaseItem[]
+}
+
+export interface ResourceINFItem {
+    // ip port 版本 操作系统 实例名 其他规格
+    id: number | string
+    ip: string
+    port: string
+    dbVersion: string
+    os: string
+    instanceName: string
+    otherSpec: string
+    [key: string]: any
+}
+
+export interface DatabaseItem {
+    dbName: string
+    shardingType: string
+    tableSpaceSize: string
+    tableSpaceName: string
+    userName: string
+    charset: string
+    deploySchema: string
 }

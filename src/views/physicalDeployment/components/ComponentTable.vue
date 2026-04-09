@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 15:25:37
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-08 18:48:38
+ * @LastEditTime: 2026-04-09 10:16:10
  * @Description: 
 -->
 <template>
@@ -10,6 +10,7 @@
         <div class="deployment-table-view" v-for="(item, index) in dataSource" :key="index">
             <TableHeader :tableColumns="tableColumns" />
             <TableContent
+                :pageType="pageType"
                 :tableItem="item"
                 :tableIndex="index"
                 :tableColumns="tableColumns"
@@ -25,7 +26,7 @@
 import TableHeader from './TableHeader'
 import TableContent from './TableContent'
 
-const props = defineProps(['dataSource', 'tableColumns', 'dataIndex'])
+const props = defineProps(['dataSource', 'tableColumns', 'dataIndex', 'pageType'])
 const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
 
 const handleView = (tableItem: any, tableIndex: number, resourceIndex: number) => {

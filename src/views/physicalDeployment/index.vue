@@ -2,26 +2,34 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-07 17:06:00
+ * @LastEditTime: 2026-04-09 15:18:15
  * @Description: ARM物理部署映射
 -->
 <template>
     <div class="content-box mapping-box">
         <div class="header">
-            <a-select v-model:value="selectValue">
+            <a-select v-model:value="selectValue" @change="handleSelectChange">
                 <a-select-option v-for="item in options" :key="item.value" :value="item.value">{{
                     item.label
                 }}</a-select-option>
             </a-select>
         </div>
-        <div class="map-content">
+        <div class="map-content" v-if="selectValue">
             <div class="title">{{ activeKey === 'component' ? '组件部署配置' : '基建服务部署配置' }}</div>
             <a-tabs v-model:activeKey="activeKey">
                 <a-tab-pane key="component" tab="组件部署">
-                    <ComponentDeploy v-if="activeKey === 'component'" ref="componentDeployRef" />
+                    <ComponentDeploy
+                        v-if="activeKey === 'component'"
+                        ref="componentDeployRef"
+                        :tmpVersion="selectValue"
+                    />
                 </a-tab-pane>
                 <a-tab-pane key="infrastructure" tab="基建服务部署">
-                    <InfrastructureDeploy v-if="activeKey === 'infrastructure'" ref="InfrastructureDeployRef" />
+                    <InfrastructureDeploy
+                        v-if="activeKey === 'infrastructure'"
+                        ref="InfrastructureDeployRef"
+                        :tmpVersion="selectValue"
+                    />
                 </a-tab-pane>
             </a-tabs>
         </div>
@@ -29,18 +37,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import ComponentDeploy from './components/ComponentDeploy.vue'
 import InfrastructureDeploy from './components/InfrastructureDeploy.vue'
 
-const selectValue = ref('v0.4.16.0001-tmp-20251120-01')
-const options = [
-    { value: 'v0.4.16.0001-tmp-20251120-01', label: 'v0.4.16.0001-tmp-20251120-01' },
-    { value: 'v0.4.16.0002-tmp-20251120-02', label: 'v0.4.16.0002-tmp-20251120-02' },
-    { value: 'v0.4.16.0003-tmp-20251120-03', label: 'v0.4.16.0003-tmp-20251120-03' },
-]
+const selectValue = ref('')
+const options = ref()
 
 const activeKey = ref('component')
+
+const componentDeployRef = ref()
+const handleSelectChange = (value: string) => {
+    activeKey.value = 'component'
+    console.log(value, componentDeployRef.value, 'value')
+    componentDeployRef.value?.getList(value)
+}
+
+onMounted(() => {
+    console.log('father-onMounted')
+
+    setTimeout(() => {
+        const data = [
+            { value: 'v0.4.16.0001-tmp-20251120-01', label: 'v0.4.16.0001-tmp-20251120-01' },
+            { value: 'v0.4.16.0002-tmp-20251120-02', label: 'v0.4.16.0002-tmp-20251120-02' },
+            { value: 'v0.4.16.0003-tmp-20251120-03', label: 'v0.4.16.0003-tmp-20251120-03' },
+        ]
+        options.value = data
+        selectValue.value = data[0].value
+        // handleSelectChange(selectValue.value)
+    }, 300)
+})
 </script>
 
 <style scoped lang="scss">

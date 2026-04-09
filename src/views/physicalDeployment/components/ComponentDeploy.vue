@@ -4,6 +4,7 @@
         <a-collapse v-model:activeKey="czActiveKey" class="deployment-collapse">
             <a-collapse-panel v-for="(value, index) in czData" :key="value.key" :header="value.title">
                 <ComponentTable
+                    pageType="component"
                     :key="`${value.key}_component`"
                     :tableColumns="tableColumns"
                     :dataSource="value.tableData"
@@ -19,10 +20,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, watch } from 'vue'
 import ComponentTable from './ComponentTable'
 import ComponentEdit from './ComponentEdit'
 import { CZDataItem, TableDataItem, ResourceItem } from '../types'
+const props = defineProps(['tmpVersion'])
 
 const tableColumns = [
     {
@@ -127,7 +129,7 @@ const tableColumns = [
         ],
     },
 ]
-
+const loading = ref(false)
 const czActiveKey = ref<string[]>([''])
 const czData = ref<CZDataItem[]>([])
 const resourceInit = ref<ResourceItem>({
@@ -166,6 +168,9 @@ const processData = (data: CZDataItem[]) => {
     })
 }
 const getList = () => {
+    loading.value = true
+    console.log(props.tmpVersion, 'component=getList')
+
     const data = [
         {
             key: 'cz1',
@@ -243,6 +248,10 @@ const getList = () => {
 
     czData.value = processData(data)
     czActiveKey.value = data.map((v) => v.key)
+
+    setTimeout(() => {
+        loading.value = false
+    }, 300)
 }
 
 const viewOrEditRef = ref<InstanceType<typeof ComponentEdit>>()
@@ -280,7 +289,12 @@ const handleUpdateData = (newItem: TableDataItem) => {
     console.log(czData.value, 'czData.value')
 }
 
+defineExpose({
+    getList,
+})
+
 onMounted(() => {
+    console.log('child-onMounted')
     getList()
 })
 </script>
