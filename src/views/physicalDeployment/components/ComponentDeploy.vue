@@ -2,30 +2,28 @@
     <div class="deployment-page">
         <div class="page-header">配置详情</div>
         <a-collapse v-model:activeKey="czActiveKey" class="deployment-collapse">
-            <a-collapse-panel v-for="(value, index) in czData" :key="value.key" :header="value.title">
+            <a-collapse-panel v-for="(value, index) in czData" :key="value.czPath" :header="value.czPath">
                 <ComponentTable
                     pageType="component"
-                    :key="`${value.key}_component`"
+                    :key="`${value.czPath}_component`"
                     :tableColumns="tableColumns"
-                    :dataSource="value.tableData"
+                    :dataSource="value.groupList"
                     :dataIndex="index"
-                    @update:view="handleEdit"
-                    @update:edit="handleEdit"
-                    @update:delete="handleDelete"
+                    :czPath="value.czPath"
+                    @update:view="emit('update:view', $event)"
+                    @update:edit="emit('update:edit', $event)"
+                    @update:delete="emit('update:delete', $event)"
                 />
             </a-collapse-panel>
         </a-collapse>
-        <ComponentEdit ref="viewOrEditRef" @update:list="handleUpdateData" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import ComponentTable from './ComponentTable'
-import ComponentEdit from './ComponentEdit'
-import { CZDataItem, TableDataItem, ResourceItem } from '../types'
-const props = defineProps(['tmpVersion'])
-
+const props = defineProps(['data'])
+const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
 const tableColumns = [
     {
         title: '',
@@ -35,20 +33,20 @@ const tableColumns = [
         children: [
             {
                 title: 'GROUP',
-                dataIndex: 'group',
-                key: 'group',
+                dataIndex: 'groupName',
+                key: 'groupName',
                 width: 80,
             },
             {
                 title: '组件和版本',
-                dataIndex: 'component',
-                key: 'component',
+                dataIndex: 'nameAndVersion',
+                key: 'nameAndVersion',
                 width: 160,
             },
             {
                 title: '规格及实例数',
-                dataIndex: 'spec',
-                key: 'spec',
+                dataIndex: 'compSpec',
+                key: 'compSpec',
             },
         ],
     },
@@ -67,20 +65,20 @@ const tableColumns = [
             },
             {
                 title: '文件系统',
-                dataIndex: 'fileSystem',
-                key: 'fileSystem',
+                dataIndex: 'hostFileSystemList',
+                key: 'hostFileSystemList',
                 width: 140,
             },
             {
                 title: '安装软件',
-                dataIndex: 'software',
-                key: 'software',
+                dataIndex: 'hostSoftwareList',
+                key: 'hostSoftwareList',
                 width: 120,
             },
             {
                 title: '实例数',
-                dataIndex: 'instanceCount',
-                key: 'instanceCount',
+                dataIndex: 'hostInstanceNum',
+                key: 'hostInstanceNum',
                 width: 80,
             },
         ],
@@ -94,209 +92,52 @@ const tableColumns = [
         children: [
             {
                 title: '主机名',
-                key: 'hostName',
+                key: 'name',
+                dataIndex: 'name',
             },
             {
                 title: 'IP',
-                key: 'ip',
+                key: 'ipAddress',
+                dataIndex: 'ipAddress',
             },
             {
                 title: 'CPU',
-                key: 'cpu',
+                key: 'cpuModel',
+                dataIndex: 'cpuModel',
             },
             {
                 title: '内存',
-                key: 'memory',
+                key: 'memoryGb',
+                dataIndex: 'memoryGb',
             },
             {
                 title: '操作系统及版本',
                 key: 'os',
+                dataIndex: 'os',
             },
             {
                 title: '文件系统',
-                key: 'allocatedFileSystem',
-                align: 'center',
+                key: 'fileSystems',
+                dataIndex: 'fileSystems',
             },
             {
                 title: '安装软件',
-                key: 'allocatedSoftware',
-                with: 140,
+                key: 'installedSoftwares',
+                dataIndex: 'installedSoftwares',
             },
-            // {
-            //     title: '操作',
-            //     key: 'action',
-            // },
         ],
     },
 ]
-const loading = ref(false)
 const czActiveKey = ref<string[]>([''])
-const czData = ref<CZDataItem[]>([])
-const resourceInit = ref<ResourceItem>({
-    id: '',
-    hostName: '',
-    ip: '',
-    cpu: '',
-    memory: '',
-    os: '',
-    osVersion: '',
-    allocatedFileSystem: '',
-    allocatedSoftware: '',
-})
-const processData = (data: CZDataItem[]) => {
-    return data.map((item) => {
-        // 处理每个 tableData 项
-        const processedTableData = item.tableData.map((record: TableDataItem) => {
-            // 创建空表格数据数组
-            const emptyTableData = Array.from({ length: record.instanceCount - record.resource.length }, () => ({
-                id: Math.random().toString().slice(2),
-                ...resourceInit.value,
-            }))
-
-            // 将原始记录与空表格数据合并
-            return {
-                ...record,
-                resource: [...record.resource, ...emptyTableData],
-            }
-        })
-
-        return {
-            key: item.key,
-            title: item.title,
-            tableData: processedTableData,
-        }
-    })
-}
-const getList = () => {
-    loading.value = true
-    console.log(props.tmpVersion, 'component=getList')
-
-    const data = [
-        {
-            key: 'cz1',
-            title: '全行/Region/AZ/LDC/SR/CZ1',
-            tableData: [
-                {
-                    id: 1,
-                    group: 'NORMAL1',
-                    component: 'APAAS.AUTH.service\n1.1',
-                    spec: '2核, 4G * 2',
-                    hostSpec: '4核, 8G',
-                    fileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
-                    software: 'tomcav7.8\ntomcav7.8',
-                    instanceCount: 3,
-                    version: '1.1.0',
-                    cpu: '2C',
-                    memory: '4G',
-                    osName: 'CentOS',
-                    osVersion: '7.6',
-                    resource: [
-                        {
-                            id: '1111',
-                            hostName: '主机',
-                            ip: '123.123.123.123',
-                            cpu: '是',
-                            memory: '撒',
-                            os: 'a s lkdfj',
-                            osVersion: '7.6',
-                            allocatedFileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
-                            allocatedSoftware: 'tomcav7.8\ntomcav7.8',
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            key: 'cz2',
-            title: '全行/Region/AZ/LDC/SR/CZ2',
-            tableData: [
-                {
-                    id: 134,
-                    group: 'NORMAL12',
-                    component: 'APAAS.AUTH.service\n1.12',
-                    spec: '2核, 4G * 2',
-                    hostSpec: '4核, 8G',
-                    fileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
-                    software: 'tomcav7.8\ntomcav7.8',
-                    instanceCount: 3,
-                    version: '1.1.0',
-                    cpu: '2C',
-                    memory: '4G',
-                    osName: 'CentOS',
-                    osVersion: '7.6',
-                    resource: [],
-                },
-                {
-                    id: 13434,
-                    group: 'NORMAL124',
-                    component: 'APAAS.AUTH.service\n1.12',
-                    spec: '2核, 4G * 2',
-                    hostSpec: '4核, 8G',
-                    fileSystem: '/user001,40G\n/user001,40G\n/user001,40G',
-                    software: 'tomcav7.8\ntomcav7.8',
-                    instanceCount: 3,
-                    version: '1.1.0',
-                    cpu: '2C',
-                    memory: '4G',
-                    osName: 'CentOS',
-                    osVersion: '7.6',
-                    resource: [],
-                },
-            ],
-        },
-    ]
-
-    czData.value = processData(data)
-    czActiveKey.value = data.map((v) => v.key)
-
-    setTimeout(() => {
-        loading.value = false
-    }, 300)
-}
-
-const viewOrEditRef = ref<InstanceType<typeof ComponentEdit>>()
-const listIndexs = ref<any>({
-    dataIndex: 0,
-    tableIndex: 0,
-    resourceIndex: 0,
-})
-// 操作：查看/选择主机
-const handleEdit = (type: string, record: any, tableIndex: number, resourceIndex: number, dataIndex: number) => {
-    const currentRecord = {
-        ...record,
-        resource: [record.resource[resourceIndex]],
-    }
-    listIndexs.value = {
-        dataIndex,
-        tableIndex,
-        resourceIndex,
-    }
-    viewOrEditRef.value?.showModel(currentRecord, type)
-}
-
-// 删除机房配置
-const handleDelete = (tableIndex: number, resourceIndex: number, dataIndex: number) => {
-    // 赋值resource中的resourceIndex初始化数据
-    const resourceArr = czData.value[dataIndex].tableData[tableIndex].resource
-    resourceArr.splice(resourceIndex, 1, { ...resourceInit.value })
-}
-// 编辑机房配置更新数据
-const handleUpdateData = (newItem: TableDataItem) => {
-    const { dataIndex, tableIndex, resourceIndex } = listIndexs.value
-    const resourceArr = czData.value[dataIndex].tableData[tableIndex].resource
-    // 使用 splice 替换，既修改了原数组，也是响应式的
-    resourceArr.splice(resourceIndex, 1, { ...newItem.resource[0] })
-    console.log(czData.value, 'czData.value')
-}
-
-defineExpose({
-    getList,
-})
-
-onMounted(() => {
-    console.log('child-onMounted')
-    getList()
-})
+const czData = computed(() => props.data)
+watch(
+    () => props.data,
+    (newVal) => {
+        console.log(newVal, 'newValprops.data')
+        if (newVal) czActiveKey.value = newVal.map((v: any) => v.czPath)
+    },
+    { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

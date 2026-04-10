@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-09 14:15:49
+ * @LastEditTime: 2026-04-10 16:33:01
  * @Description: 
 -->
 <template>
@@ -14,17 +14,17 @@
                 :dataSource="[currentItem]"
                 :pagination="false"
                 :columns="[
-                    { title: '组件名', dataIndex: 'component', width: 200 },
-                    { title: '组件版本', dataIndex: 'version', width: 200 },
-                    { title: '组件规格', dataIndex: 'hostSpec', width: 200 },
-                    { title: '实例数量', dataIndex: 'instanceCount', width: 200 },
+                    { title: '组件名', key: 'componentName', dataIndex: 'componentName', width: 200 },
+                    { title: '组件版本', key: 'componentVersion', dataIndex: 'componentVersion', width: 200 },
+                    { title: '组件规格', key: 'compSpec', dataIndex: 'compSpec', width: 200 },
+                    { title: '实例数量', key: 'compSpecInstanceNum', dataIndex: 'compSpecInstanceNum', width: 200 },
                 ]"
                 :scroll="{ x: 'max-content' }"
                 size="small"
             >
                 <template #bodyCell="{ column, record }">
-                    <template v-if="column.dataIndex === 'component'">
-                        {{ record.component.replace('\n', ' ') }}
+                    <template v-if="column.key === 'compSpec'">
+                        {{ record.compSpecCPU }},{{ record.compSpecMemory }}
                     </template>
                 </template>
             </a-table>
@@ -37,8 +37,8 @@
                 :dataSource="[currentItem]"
                 :pagination="false"
                 :columns="[
-                    { title: 'CPU', dataIndex: 'cpu', width: 200 },
-                    { title: '内存', dataIndex: 'memory', width: 200 },
+                    { title: 'CPU', key: 'hostCPU', dataIndex: 'hostCPU', width: 200 },
+                    { title: '内存', key: 'hostMemory', dataIndex: 'hostMemory', width: 200 },
                     { title: '操作系统', dataIndex: 'osName', width: 200 },
                     { title: '操作系统版本', dataIndex: 'osVersion', width: 200 },
                 ]"
@@ -50,20 +50,13 @@
             <!-- 文件系统 -->
             <div class="sub-section-title">文件系统</div>
             <a-table
-                :dataSource="
-                    currentItem.fileSystem.split('\n').map((item, index) => ({
-                        username: 'user001',
-                        group: 'user001',
-                        mountDir: item.split(',')[0],
-                        size: item.split(',')[1],
-                    }))
-                "
+                :dataSource="currentItem.hostFileSystemList"
                 :pagination="false"
                 :columns="[
-                    { title: '用户名', dataIndex: 'username', width: 200 },
-                    { title: '主组', dataIndex: 'group', width: 200 },
-                    { title: '挂载目录', dataIndex: 'mountDir', width: 200 },
-                    { title: '空间大小', dataIndex: 'size', width: 200 },
+                    { title: '用户名', key: 'user', dataIndex: 'user', width: 200 },
+                    { title: '主组', key: 'group', dataIndex: 'group', width: 200 },
+                    { title: '挂载目录', key: 'mount', dataIndex: 'mount', width: 200 },
+                    { title: '空间大小', key: 'size', dataIndex: 'size', width: 200 },
                 ]"
                 :scroll="{ x: 'max-content' }"
                 size="small"
@@ -72,20 +65,13 @@
             <!-- 安装软件 -->
             <div class="sub-section-title">安装软件</div>
             <a-table
-                :dataSource="
-                    currentItem.software.split('\n').map((item, index) => ({
-                        name: 'mysql',
-                        version: 'v7.1.0',
-                        type: index === 0 ? '客户端' : '中间件',
-                        remark: '/',
-                    }))
-                "
+                :dataSource="currentItem.hostSoftwareList"
                 :pagination="false"
                 :columns="[
-                    { title: '软件名称', dataIndex: 'name', width: 200 },
-                    { title: '软件版本', dataIndex: 'version', width: 200 },
-                    { title: '软件类型', dataIndex: 'type', width: 200 },
-                    { title: '备注', dataIndex: 'remark', width: 200 },
+                    { title: '软件名称', key: 'name', dataIndex: 'name', width: 200 },
+                    { title: '软件版本', key: 'version', dataIndex: 'version', width: 200 },
+                    { title: '软件类型', key: 'type', dataIndex: 'type', width: 200 },
+                    { title: '备注', key: 'remark', dataIndex: 'remark', width: 200 },
                 ]"
                 :scroll="{ x: 'max-content' }"
                 size="small"
@@ -99,45 +85,50 @@
                     {{ type === 'edit' ? '被分配主机' : '已分配主机' }}
                 </div>
                 <div v-if="type === 'edit'" class="host-select-bar">
-                    <a-select placeholder="请选择IP" style="width: 150px" />
-                    <a-select placeholder="请选择主机名" style="width: 150px" />
+                    <a-input
+                        v-model:value="selectParams.ipAddress"
+                        placeholder="请输入IP"
+                        style="width: 150px"
+                        allowClear
+                        @change="handleSearch"
+                    ></a-input>
+                    <a-input
+                        v-model:value="selectParams.name"
+                        placeholder="请输入主机名"
+                        style="width: 150px"
+                        allowClear
+                        @change="handleSearch"
+                    ></a-input>
                 </div>
             </div>
             <!-- 详情状态：查看已分配主机 -->
             <template v-if="type === 'view'">
                 <a-table
-                    :dataSource="currentItem.resource"
+                    :dataSource="currentItem.resourceList"
                     :key="(record: ResourceItem) => record.id"
                     :pagination="false"
                     :columns="[
-                        { title: 'IP', dataIndex: 'ip', width: 120 },
-                        { title: 'host', dataIndex: 'hostName', width: 120 },
-                        { title: 'CPU', dataIndex: 'cpu', width: 80 },
-                        { title: '内存', dataIndex: 'memory', width: 80 },
-                        { title: '操作系统', dataIndex: 'os', width: 150 },
-                        { title: '操作系统版本', dataIndex: 'osVersion', width: 150 },
+                        { title: 'IP', key: 'ipAddress', dataIndex: 'ipAddress', width: 120 },
+                        { title: 'host', key: 'name', dataIndex: 'name', width: 120 },
+                        { title: 'CPU', key: 'cpuModel', dataIndex: 'cpuModel', width: 80 },
+                        { title: '内存', key: 'memoryGb', dataIndex: 'memoryGb', width: 80 },
+                        { title: '操作系统', key: 'osName', dataIndex: 'osName', width: 150 },
+                        { title: '操作系统版本', key: 'osVersion', dataIndex: 'osVersion', width: 150 },
                     ]"
                     :scroll="{ x: 'max-content' }"
                     :defaultExpandAllRows="true"
                 >
                     <template #expandedRowRender="{ record }">
                         <div class="expand-detail">
-                            <div class="sub-section-title">文件系统</div>
+                            <div class="sub-section-title">文件系统1</div>
                             <a-table
-                                :dataSource="
-                                    record.allocatedFileSystem.split('\n').map((item, index) => ({
-                                        username: 'user001',
-                                        group: 'user001',
-                                        mountDir: item.split(',')[0],
-                                        size: item.split(',')[1],
-                                    }))
-                                "
+                                :dataSource="record.fileSystems"
                                 :pagination="false"
                                 :columns="[
-                                    { title: '用户名', dataIndex: 'username', width: 200 },
-                                    { title: '主组', dataIndex: 'group', width: 200 },
-                                    { title: '挂载目录', dataIndex: 'mountDir', width: 200 },
-                                    { title: '空间大小', dataIndex: 'size', width: 200 },
+                                    { title: '用户名', key: 'username', dataIndex: 'username', width: 200 },
+                                    { title: '主组', key: 'groupName', dataIndex: 'groupName', width: 200 },
+                                    { title: '挂载目录', key: 'mountPoint', dataIndex: 'mountPoint', width: 200 },
+                                    { title: '空间大小', key: 'sizeGb', dataIndex: 'sizeGb', width: 200 },
                                 ]"
                                 :scroll="{ x: 'max-content' }"
                                 size="small"
@@ -145,20 +136,13 @@
 
                             <div class="sub-section-title">安装软件</div>
                             <a-table
-                                :dataSource="
-                                    record.allocatedSoftware.split('\n').map((item, index) => ({
-                                        name: 'mysql',
-                                        version: 'v7.1.0',
-                                        type: index === 0 ? '客户端' : '中间件',
-                                        remark: '/',
-                                    }))
-                                "
+                                :dataSource="record.installedSoftwares"
                                 :pagination="false"
                                 :columns="[
-                                    { title: '软件名称', dataIndex: 'name', width: 200 },
-                                    { title: '软件版本', dataIndex: 'version', width: 200 },
-                                    { title: '软件类型', dataIndex: 'type', width: 200 },
-                                    { title: '备注', dataIndex: 'remark', width: 200 },
+                                    { title: '软件名称', key: 'softwareName', dataIndex: 'softwareName', width: 200 },
+                                    { title: '软件版本', key: 'version', dataIndex: 'version', width: 200 },
+                                    { title: '软件类型', key: 'type', dataIndex: 'type', width: 200 },
+                                    { title: '备注', key: 'remark', dataIndex: 'remark', width: 200 },
                                 ]"
                                 size="small"
                             />
@@ -172,16 +156,21 @@
                 <a-table
                     :data-source="hostList"
                     :pagination="false"
-                    :row-key="(record: HostItem) => record.id"
+                    :row-key="(record: HostResourceItem) => record.id"
                     :columns="[
-                        { title: '是否被关联', dataIndex: 'isRelated', width: 100 },
-                        { title: 'ip', dataIndex: 'ip', width: 120 },
-                        { title: '主机名', dataIndex: 'hostName', width: 120 },
-                        { title: 'cpu', dataIndex: 'cpu', width: 80 },
-                        { title: '内存', dataIndex: 'memory', width: 80 },
-                        { title: '操作系统及版本', dataIndex: 'os', width: 150 },
-                        { title: '文件系统概览', dataIndex: 'fileSystem', width: 150 },
-                        { title: '安装软件概览', dataIndex: 'software', width: 150 },
+                        { title: '是否被关联', key: 'selectedFlag', dataIndex: 'selectedFlag', width: 100 },
+                        { title: 'ip', key: 'ipAddress', dataIndex: 'ipAddress', width: 120 },
+                        { title: '主机名', key: 'name', dataIndex: 'name', width: 120 },
+                        { title: 'cpu', key: 'cpuModel', dataIndex: 'cpuModel', width: 80 },
+                        { title: '内存', key: 'memoryGb', dataIndex: 'memoryGb', width: 80 },
+                        { title: '操作系统及版本', key: 'os', dataIndex: 'os', width: 150 },
+                        { title: '文件系统概览', key: 'fileSystems', dataIndex: 'fileSystems', width: 150 },
+                        {
+                            title: '安装软件概览',
+                            key: 'installedSoftwares',
+                            dataIndex: 'installedSoftwares',
+                            width: 150,
+                        },
                         {
                             title: '操作',
                             dataIndex: 'action',
@@ -200,11 +189,25 @@
                     }"
                 >
                     <template #bodyCell="{ column, record }">
-                        <template v-if="column.dataIndex === 'isRelated'">
-                            <span class="host-is-related yes" v-if="record.isRelated === '1'">是</span>
+                        <template v-if="column.key === 'selectedFlag'">
+                            <span class="host-is-related yes" v-if="record.selectedFlag">是</span>
                             <span class="host-is-related no" v-else>否</span>
                         </template>
-                        <template v-else-if="column.dataIndex === 'action'">
+                        <template v-if="column.key === 'os'"> {{ record.osName }}{{ record.osVersion }} </template>
+                        <template v-else-if="column.key === 'fileSystems'">
+                            {{
+                                record.fileSystems.map((file: any) => `${file.username},${file.mountPoint}`).join('\n')
+                            }}
+                        </template>
+                        <template v-else-if="column.key === 'installedSoftwares'">
+                            {{
+                                record.installedSoftwares
+                                    .map((soft: any) => `${soft.softwareName}${soft.version}`)
+                                    .join('\n')
+                            }}
+                        </template>
+
+                        <template v-else-if="column.key === 'action'">
                             <a @click="toggleExpand(record)">
                                 <template v-if="expandedRowKeys.includes(record.id)">
                                     收起详情
@@ -224,15 +227,21 @@
                                 <div class="sub-host-desc">
                                     <div class="list-row">
                                         <div class="list-item">
-                                            {{ record.hostName }}
-                                        </div>
-                                        <div class="list-item"><span class="label">ip：</span>{{ record.ip }}</div>
-                                        <div class="list-item"><span class="label">cpu：</span>{{ record.cpu }}</div>
-                                        <div class="list-item">
-                                            <span class="label">内存：</span>{{ record.memory }}
+                                            {{ record.name }}
                                         </div>
                                         <div class="list-item">
-                                            <span class="label">操作系统及版本：</span>{{ record.os }}
+                                            <span class="label">ip：</span>{{ record.ipAddress }}
+                                        </div>
+                                        <div class="list-item">
+                                            <span class="label">cpu：</span>{{ record.cpuModel }}
+                                        </div>
+                                        <div class="list-item">
+                                            <span class="label">内存：</span>{{ record.memoryGb }}
+                                        </div>
+                                        <div class="list-item">
+                                            <span class="label">操作系统及版本：</span>{{ record.osName }},{{
+                                                record.osVersion
+                                            }}
                                         </div>
                                     </div>
                                 </div>
@@ -240,22 +249,18 @@
                             <div class="host-detail">
                                 <div class="sub-host-title">文件系统:</div>
                                 <div class="sub-host-desc">
-                                    <div
-                                        v-for="(fileItem, index) in record.fileSystemList"
-                                        :key="index"
-                                        class="list-row"
-                                    >
+                                    <div v-for="(fileItem, index) in record.fileSystems" :key="index" class="list-row">
                                         <div class="list-item">
                                             <span class="label">用户名：</span>{{ fileItem.username }}
                                         </div>
                                         <div class="list-item">
-                                            <span class="label">主组：</span>{{ fileItem.group }}
+                                            <span class="label">主组：</span>{{ fileItem.groupName }}
                                         </div>
                                         <div class="list-item">
-                                            <span class="label">挂载目录：</span>{{ fileItem.mountDir }}
+                                            <span class="label">挂载目录：</span>{{ fileItem.mountPoint }}
                                         </div>
                                         <div class="list-item">
-                                            <span class="label">空间大小：</span>{{ fileItem.size }}
+                                            <span class="label">空间大小：</span>{{ fileItem.sizeGb }}
                                         </div>
                                     </div>
                                 </div>
@@ -263,9 +268,13 @@
                             <div class="host-detail">
                                 <div class="sub-host-title">安装软件:</div>
                                 <div class="sub-host-desc">
-                                    <div v-for="(softItem, index) in record.softwareList" :key="index" class="list-row">
+                                    <div
+                                        v-for="(softItem, index) in record.installedSoftwares"
+                                        :key="index"
+                                        class="list-row"
+                                    >
                                         <div class="list-item">
-                                            <span class="label">软件名称：</span>{{ softItem.name }}
+                                            <span class="label">软件名称：</span>{{ softItem.softwareName }}
                                         </div>
                                         <div class="list-item">
                                             <span class="label">软件版本：</span>{{ softItem.version }}
@@ -287,7 +296,7 @@
 
         <template #footer>
             <div class="modal-footer" v-if="type === 'edit'">
-                <a-button @click="hideModal">取消</a-button>
+                <a-button @click="hideModel">取消</a-button>
                 <a-button type="primary" @click="handleConfirm">确定</a-button>
             </div>
         </template>
@@ -295,26 +304,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, nextTick } from 'vue'
-import { TableDataItem, HostItem, ResourceItem, IdType } from '../types'
+import { ref, computed, reactive, nextTick } from 'vue'
+import { HoatTableItem, HostResourceItem, ResourceItem } from '../types'
 import { UpOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
 
 const emit = defineEmits(['update:list'])
+
 const open = ref(false)
 const type = ref('')
 const title = computed(() => (type.value === 'view' ? '查看详情' : '选择主机'))
 const formRef = ref()
 const currentItem = reactive<any>({})
+const selectParams = computed(() => ({
+    softAppId: '',
+    softAppCode: '',
+    ipAddress: '',
+    name: '',
+}))
 
-const showModel = (record: TableDataItem, mode: string) => {
-    console.log(record, mode, 'record')
+const showModel = (record: HoatTableItem, mode: string, softAppId: string, softAppCode: string) => {
+    console.log(record, mode, softAppId, softAppCode, 'record')
     type.value = mode
+    selectParams.value.softAppId = softAppId
+    selectParams.value.softAppCode = softAppCode
     Object.assign(currentItem, { ...JSON.parse(JSON.stringify(record)) }) // 深拷贝，防止修改时影响原数据
     open.value = true
     getHostList()
 }
 
-const hideModal = () => {
+const hideModel = () => {
     formRef.value?.resetFields()
     Object.assign(currentItem, {})
     open.value = false
@@ -322,68 +341,163 @@ const hideModal = () => {
     selectedRowKeys.value = []
 }
 
-defineExpose({
-    showModel,
-})
+const handleSearch = () => {
+    // 此处需要新增防抖
+    getHostList()
+}
 // 主机列表（编辑状态用）
-const hostList = ref<HostItem[]>([])
+const hostList = ref<HostResourceItem[]>([])
 const getHostList = () => {
-    const data = [
-        {
-            id: '110000',
-            isRelated: '0',
-            ip: '192.168.1.0',
-            hostName: 'host001',
-            version: '1.1.0',
-            cpu: '2C',
-            memory: '8G',
-            os: '麒麟v10',
-            fileSystem: '/user002,20G /user002,20G',
-            software: 'mysql v7',
-            fileSystemList: [
-                { username: 'user001', group: 'user001', mountDir: '/user001', size: '40 GB' },
-                { username: 'user002', group: 'user002', mountDir: '/user002', size: '40 GB' },
-            ],
-            softwareList: [
-                { name: 'mysql', version: 'v8.0', type: '客户端', remark: '无' },
-                { name: 'mysql', version: 'v7.0', type: '客户端', remark: '无' },
-            ],
-        },
-        {
-            id: '1102222',
-            isRelated: '1',
-            ip: '192.168.1.0',
-            hostName: 'host002',
-            version: '1.1.0',
-            cpu: '2C',
-            memory: '8G',
-            os: '麒麟v10',
-            fileSystem: '/user002,20G /user002,20G',
-            software: 'mysql v7',
-            fileSystemList: [
-                { username: 'user001', group: 'user001', mountDir: '/user001', size: '40 GB' },
-                { username: 'user002', group: 'user002', mountDir: '/user002', size: '40 GB' },
-            ],
-            softwareList: [
-                { name: 'mysql', version: 'v8.0', type: '客户端', remark: '无' },
-                { name: 'mysql', version: 'v7.0', type: '客户端', remark: '无' },
-            ],
-        },
-    ]
-    hostList.value = data
-    nextTick(() => {
-        setTimeout(() => {
-            toggleExpand(data[0])
-        }, 50)
-    })
+    console.log(selectParams.value, 'selectParamsselectParamsselectParams')
+
+    // 获取环境资源主机规格列表
+    const res = {
+        code: '0000000',
+        data: [
+            {
+                id: '1111111222222',
+                envId: '',
+                envName: '',
+                softAppId: '122',
+                softAppCode: '',
+                isDeleted: 0,
+                createTime: '',
+                updateTime: '',
+                name: 'host001',
+                ipAddress: '12.22.123',
+                memoryGb: '8G',
+                cpuModel: '4G',
+                osName: '麒麟',
+                osVersion: 'v2.0',
+                status: 0,
+                envResourceId: '12222',
+                fileSystems: [
+                    {
+                        id: '10',
+                        hostId: '12',
+                        mountPoint: '9.0',
+                        fsType: '',
+                        sizeGb: '10GB',
+                        uid: '',
+                        gid: '',
+                        isDeleted: 0,
+                        username: '/user01',
+                        groupName: '主组',
+                        createTime: '',
+                        updateTime: '',
+                    },
+                    {
+                        id: '1100',
+                        hostId: '1222',
+                        mountPoint: '1.0',
+                        fsType: '',
+                        sizeGb: '12GB',
+                        uid: '',
+                        gid: '',
+                        isDeleted: 0,
+                        username: 'user02',
+                        groupName: 'groupName',
+                    },
+                ],
+                installedSoftwares: [
+                    {
+                        id: '2323',
+                        hostId: '1212',
+                        softwareName: 'sd',
+                        version: '2.1',
+                        type: '中间件',
+                        isDeleted: 0,
+                        remark: '备注',
+                        createTime: '',
+                        updateTime: '',
+                    },
+                ],
+                selectedFlag: true,
+                mappingId: '1222',
+                verLogicalDeploymentArchId: '19121',
+            },
+            {
+                id: '222222',
+                envId: '',
+                envName: '',
+                softAppId: '122',
+                softAppCode: '',
+                isDeleted: 0,
+                createTime: '',
+                updateTime: '',
+                name: 'host001',
+                ipAddress: '12.22.122',
+                memoryGb: '8G',
+                cpuModel: '4G',
+                osName: '麒麟',
+                osVersion: 'v2.0',
+                status: 0,
+                envResourceId: '12222',
+                fileSystems: [
+                    {
+                        id: '10',
+                        hostId: '12',
+                        mountPoint: '9.0',
+                        fsType: '',
+                        sizeGb: '10GB',
+                        uid: '',
+                        gid: '',
+                        isDeleted: 0,
+                        username: '/user01',
+                        groupName: '主组',
+                        createTime: '',
+                        updateTime: '',
+                    },
+                    {
+                        id: '1100',
+                        hostId: '1222',
+                        mountPoint: '1.0',
+                        fsType: '',
+                        sizeGb: '12GB',
+                        uid: '',
+                        gid: '',
+                        isDeleted: 0,
+                        username: 'user02',
+                        groupName: 'groupName',
+                    },
+                ],
+                installedSoftwares: [
+                    {
+                        id: '2323',
+                        hostId: '1212',
+                        softwareName: 'sd',
+                        version: '2.1',
+                        type: '中间件',
+                        isDeleted: 0,
+                        remark: '备注',
+                        createTime: '',
+                        updateTime: '',
+                    },
+                ],
+                selectedFlag: false,
+                mappingId: '1222',
+                verLogicalDeploymentArchId: '19121',
+                relationId: 'dww',
+            },
+        ],
+    }
+    const { code, data } = res
+    if (code === '0000000') {
+        hostList.value = data
+        nextTick(() => {
+            setTimeout(() => {
+                toggleExpand(hostList.value[0])
+            }, 50)
+        })
+    }
 }
 
 // 展开的行
-const expandedRowKeys = ref<IdType[]>([])
+const expandedRowKeys = ref<string[]>([])
 // 选中行
-const selectedRowKeys = ref<IdType[]>([])
+const selectedRowKeys = ref<string[]>([])
 // 选择行
-const onSelectRowChange = (keys: IdType[]) => {
+const onSelectRowChange = (keys: string[]) => {
     selectedRowKeys.value = keys
 }
 
@@ -391,36 +505,32 @@ const onSelectRowChange = (keys: IdType[]) => {
 const toggleExpand = (record: any) => {
     const id = record.id
     const keys = expandedRowKeys.value
-    if (keys.includes(id)) {
-        expandedRowKeys.value = keys.filter((item) => item !== id)
-    } else {
-        expandedRowKeys.value = [...keys, id]
-    }
+    expandedRowKeys.value = keys.includes(id) ? keys.filter((item) => item !== id) : [...keys, id]
 }
 
 // 确定
 const handleConfirm = () => {
-    if (!currentItem) return
+    if (!selectedRowKeys.value.length) {
+        message.error('请选择主机')
+        return
+    }
+
     // 把选中的主机回填到resource
     setTimeout(() => {
-        const selectedHosts = hostList.value.filter((host) => selectedRowKeys.value.includes(host.id))
-        const newResource: any[] = selectedHosts.map((host) => ({
-            id: host.id,
-            hostName: host.hostName,
-            ip: host.ip,
-            cpu: host.cpu,
-            memory: host.memory,
-            os: host.os,
-            allocatedFileSystem: host.fileSystem,
-            allocatedSoftware: host.software,
-        }))
-        currentItem.resource[0] = newResource[0]
-        // 更新数据
-        const newItem = { ...currentItem }
-        emit('update:list', newItem)
-        hideModal()
+        // 此处要注意，看使用哪个参数来筛选当前行
+        const selectedHost = hostList.value.find((host) => selectedRowKeys.value.includes(host.id))
+        currentItem.resourceList[0] = {
+            ...selectedHost,
+            relationType: 'host',
+            relationStatus: 'add', // 新增标识，用于前端获取全部资源保存
+        }
+        emit('update:list', { ...currentItem })
     }, 300)
 }
+defineExpose({
+    showModel,
+    hideModel,
+})
 </script>
 
 <style scoped lang="scss">

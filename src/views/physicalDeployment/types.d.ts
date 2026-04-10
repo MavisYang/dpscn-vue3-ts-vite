@@ -2,10 +2,92 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-09 15:03:03
+ * @LastEditTime: 2026-04-10 11:10:02
  * @Description:
  */
 
+export interface HoatTableItem {
+    id: number | string
+    groupName: string
+    componentName: string
+    componentVersion: string
+    compSpecCPU: string
+    compSpecMemory: string
+    compSpecInstanceNum: string
+    osName: string
+    osVersion: string
+    hostCPU: string
+    hostMemory: string
+    hostInstanceNum: number
+    hostFileSystemList: FileSystemItem[]
+    hostSoftwareList: SoftwareItem[]
+    [key: string]: any
+}
+
+export interface HostResourceItem {
+    id: string
+    envId: string
+    envName: string
+    softAppId: string
+    softAppCode: string
+    isDeleted: number
+    createTime: string
+    updateTime: string
+    name: string
+    ipAddress: string
+    memoryGb: string
+    cpuModel: string
+    osName: string
+    osVersion: string
+    status: number
+    envResourceId: string
+    fileSystems: HostResourceFileItem[]
+    installedSoftwares: HostResourceSoftItem[]
+    selectedFlag: boolean
+    mappingId: string
+    verLogicalDeploymentArchId: string
+    [key: string]: any
+}
+
+export interface DatabaseResourceItem {
+    id: string
+    ip: string
+    port: string
+    dbType: string
+    version: string
+    instanceName: string
+    osName: string
+    status: number
+    envResourceId: number
+    databaseResourceList: DatabaseResourceItem[]
+    selectedFlag: boolean
+    mappingId: string
+    verLogicalDeploymentArchId: string
+}
+
+export interface HostResourceFileItem {
+    id: string
+    hostId: string
+    mountPoint: string
+    fsType: string
+    sizeGb: string
+    uid: string
+    gid: string
+    isDeleted: number
+    username: string
+    groupName: string
+}
+export interface HostResourceSoftItem {
+    id: string
+    hostId: string
+    softwareName: string
+    version: string
+    type: string
+    isDeleted: number
+    remark: string
+    createTime: string
+    updateTime: string
+}
 export interface IdType {
     id: number | string
 }
@@ -41,43 +123,36 @@ export interface ResourceItem {
 
 export interface TableDataItem {
     id: number | string
-    group: string
-    component: string
-    spec: string
-    hostSpec: string
-    fileSystem: string
-    software: string
-    instanceCount: number
-    resource: ResourceItem[]
-}
-export interface HostItem {
-    id: number | string
-    isRelated: string
-    ip: string
-    hostName: string
-    version: string
-    cpu: string
-    memory: string
-    os: string
-    fileSystem: string
-    software: string
-    fileSystemList: FileSystemItem[]
-    softwareList: SoftwareItem[]
+    groupName: string
+    componentName: string
+    componentVersion: string
+    compSpecCPU: string
+    compSpecMemory: string
+    compSpecInstanceNum: string
+    osName: string
+    osVersion: string
+    hostCPU: string
+    hostMemory: string
+    hostInstanceNum: number
+    hostFileSystemList: FileSystemItem[]
+    hostSoftwareList: SoftwareItem[]
     [key: string]: any
 }
 
 export interface FileSystemItem {
     username: string
-    group: string
-    mountDir: string
-    size: string
+    groupName: string
+    mountPoint: string
+    sizeGb: string
+    [key: string]: any
 }
 
 export interface SoftwareItem {
-    name: string
+    softwareName: string
     version: string
     type: string
     remark: string
+    [key: string]: any
 }
 
 export interface ServiceType {
@@ -100,7 +175,7 @@ export interface CZINFTableDataItem {
     instanceName: string
     otherSpec: string
     instanceCount: number
-    isRelated: string
+    selectedFlag: string
     resource: ResourceINFItem[]
     database: DatabaseItem[]
 }

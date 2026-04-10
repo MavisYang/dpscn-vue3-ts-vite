@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 15:25:37
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-09 10:16:10
+ * @LastEditTime: 2026-04-10 15:20:17
  * @Description: 
 -->
 <template>
@@ -26,17 +26,46 @@
 import TableHeader from './TableHeader'
 import TableContent from './TableContent'
 
-const props = defineProps(['dataSource', 'tableColumns', 'dataIndex', 'pageType'])
+const props = defineProps(['dataSource', 'tableColumns', 'dataIndex', 'pageType', 'czPath', 'dbType'])
 const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
 
 const handleView = (tableItem: any, tableIndex: number, resourceIndex: number) => {
-    emit('update:view', 'view', tableItem, tableIndex, resourceIndex, props.dataIndex)
+    const params = {
+        type: 'view',
+        tableItem,
+        tableIndex,
+        resourceIndex,
+        dataIndex: props.dataIndex,
+        pageType: props.pageType,
+        czPath: props.czPath,
+        dbType: props.dbType, // 基建部署会有该字段
+    }
+
+    emit('update:view', params)
 }
 const handleSelectHost = (tableItem: any, tableIndex: number, resourceIndex: number) => {
-    emit('update:edit', 'edit', tableItem, tableIndex, resourceIndex, props.dataIndex)
+    const params = {
+        type: 'edit',
+        tableItem,
+        tableIndex,
+        resourceIndex,
+        dataIndex: props.dataIndex,
+        pageType: props.pageType,
+        czPath: props.czPath,
+        dbType: props.dbType,
+    }
+    emit('update:edit', params)
 }
 const handleDelete = (tableIndex: number, resourceIndex: number) => {
-    emit('update:delete', tableIndex, resourceIndex, props.dataIndex)
+    const params = {
+        tableIndex,
+        resourceIndex,
+        dataIndex: props.dataIndex,
+        pageType: props.pageType,
+        czPath: props.czPath,
+        dbType: props.dbType,
+    }
+    emit('update:delete', params)
 }
 </script>
 

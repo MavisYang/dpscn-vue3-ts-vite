@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-09 10:21:33
+ * @LastEditTime: 2026-04-09 18:12:53
  * @Description: 
 -->
 <template>
@@ -17,14 +17,53 @@
                             :key="columnsChild.key || columnsChild.dataIndex"
                             :style="{ width: columnsChild.width + 'px' }"
                         >
-                            {{ tableItem[columnsChild.key || columnsChild.dataIndex] }}
+                            <!-- 主机 -->
+                            <template v-if="columnsChild.key === 'nameAndVersion'">
+                                <span>{{ tableItem.componentName }} {{ tableItem.componentVersion }}</span>
+                            </template>
+                            <template v-else-if="columnsChild.key === 'compSpec'">
+                                <span
+                                    >{{ tableItem.compSpecCPU }},{{ tableItem.compSpecMemory }}*{{
+                                        tableItem.compSpecInstanceNum
+                                    }}</span
+                                >
+                            </template>
+                            <template v-else-if="columnsChild.key === 'hostSpec'">
+                                <span>{{ tableItem.hostCPU }},{{ tableItem.hostMemory }}</span>
+                            </template>
+
+                            <template v-else-if="columnsChild.key === 'hostFileSystemList'">
+                                <span>{{
+                                    tableItem.hostFileSystemList
+                                        .map((file: any) => `${file.user},${file.mount}`)
+                                        .join('\n')
+                                }}</span>
+                            </template>
+                            <template v-else-if="columnsChild.key === 'hostSoftwareList'">
+                                <span>{{
+                                    tableItem.hostSoftwareList
+                                        .map((soft: any) => `${soft.name}${soft.version}`)
+                                        .join('\n')
+                                }}</span>
+                            </template>
+
+                            <!--  基建-->
+                            <template v-else-if="columnsChild.key === 'otherSpecList'">
+                                <span>{{
+                                    tableItem.otherSpecList
+                                        .map((spec: any) => `${spec.dbName},${spec.schemaName}`)
+                                        .join('\n')
+                                }}</span>
+                            </template>
+
+                            <template v-else> {{ tableItem[columnsChild.key || columnsChild.dataIndex] }}</template>
                         </div>
                     </template>
                     <template v-else>
-                        <template v-if="tableItem.resource && tableItem.resource.length > 0">
+                        <template v-if="tableItem.resourceList && tableItem.resourceList.length > 0">
                             <div
                                 class="resource-row"
-                                v-for="(resourceItem, resourceIndex) in tableItem.resource"
+                                v-for="(resourceItem, resourceIndex) in tableItem.resourceList"
                                 :key="resourceIndex"
                             >
                                 <div class="resource-info">
@@ -33,28 +72,54 @@
                                         class="table-body-cell resource-cell"
                                         :key="columnsChild.key"
                                         :class="[
-                                            (columnsChild.key === 'hostName' && !resourceItem.hostName) ||
+                                            (columnsChild.key === 'ipAddress' && !resourceItem.ipAddress) ||
                                             (columnsChild.key === 'ip' && !resourceItem.ip)
                                                 ? 'empty-resource'
                                                 : '',
                                         ]"
                                         :style="{ width: columnsChild.width + 'px' }"
                                     >
-                                        <template v-if="pageType === 'component' && columnsChild.key === 'hostName'">
-                                            {{ resourceItem.hostName || '请选择主机' }}
+                                        <template v-if="pageType === 'component' && columnsChild.key === 'ipAddress'">
+                                            {{ resourceItem.ipAddress || '请选择主机' }}
                                         </template>
                                         <template
                                             v-else-if="pageType === 'infrastructure' && columnsChild.key === 'ip'"
                                         >
                                             {{ resourceItem.ip || '请选择基建服务' }}
                                         </template>
+                                        <template v-else-if="columnsChild.key === 'os'">
+                                            {{ resourceItem.osName }}{{ resourceItem.osVersion }}
+                                        </template>
+
+                                        <template v-else-if="columnsChild.key === 'fileSystems'">
+                                            <span>{{
+                                                resourceItem?.fileSystems
+                                                    .map((file: any) => `${file.username},${file.mountPoint}`)
+                                                    .join('\n')
+                                            }}</span>
+                                        </template>
+                                        <template v-else-if="columnsChild.key === 'installedSoftwares'">
+                                            <span>{{
+                                                resourceItem?.installedSoftwares
+                                                    .map((soft: any) => `${soft.softwareName}${soft.version}`)
+                                                    .join('\n')
+                                            }}</span>
+                                        </template>
+                                        <template v-else-if="columnsChild.key === 'databaseResourceList'">
+                                            <span>{{
+                                                resourceItem?.databaseResourceList
+                                                    .map((soft: any) => `${soft.dbName}`)
+                                                    .join('\n')
+                                            }}</span>
+                                        </template>
+
                                         <template v-else>
                                             {{ resourceItem[columnsChild.key || columnsChild.dataIndex] }}
                                         </template>
                                     </div>
                                 </div>
                                 <div class="table-body-cell col-action">
-                                    <template v-if="resourceItem.hostName || resourceItem.ip">
+                                    <template v-if="resourceItem.ipAddress || resourceItem.ip">
                                         <a
                                             class="action-link view"
                                             @click="emit('update:view', tableItem, tableIndex, resourceIndex)"
@@ -191,6 +256,11 @@ const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
                 color: #ff4d4f;
             }
         }
+    }
+
+    .empty-resource-tip {
+        color: #c9ccd8;
+        padding: 12px;
     }
 }
 </style>
