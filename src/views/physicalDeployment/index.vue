@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-10 16:30:22
+ * @LastEditTime: 2026-04-13 10:25:00
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -121,21 +121,32 @@ const getDetails = () => {
                         dbType: 'TDSQL',
                         dbSpecList: [
                             {
-                                czPath: '全行/Region/AZ/LDC/SR/CZ1',
+                                czPath: '全行/Region/AZ/LDC/SR/CZ9',
                                 specList: [
                                     {
+                                        id: '122',
                                         dbVersion: '7.0',
                                         osSystem: 'Windows',
-                                        instanceName: 'instanceName001',
+                                        instanceName: 'instanceName990',
                                         instanceNum: 3,
                                         otherSpecList: [
                                             {
                                                 dbName: 'db001',
                                                 schemaName: 'schema001',
+                                                shardingMethod: 'shardingMethod001',
+                                                tablespaceName: 'tablespaceName001',
+                                                tablespaceSize: '10GB',
+                                                charset: 'dd',
+                                                userName: 'userName001',
                                             },
                                             {
                                                 dbName: 'db002',
                                                 schemaName: 'schema002',
+                                                shardingMethod: 'shardingMethod002',
+                                                tablespaceName: 'tablespaceName002',
+                                                tablespaceSize: '10GB',
+                                                charset: 'dd',
+                                                userName: 'userName002',
                                             },
                                         ],
                                     },
@@ -163,8 +174,8 @@ const resourceHostInit = ref<any>({
     osVersion: '',
     fileSystems: [],
     installedSoftwares: [],
-    mappingId: 0,
-    verLogicalDeploymentArchId: 0,
+    mappingId: '',
+    verLogicalDeploymentArchId: '',
 })
 const resourceDBInit = ref<any>({
     ip: '',
@@ -173,8 +184,8 @@ const resourceDBInit = ref<any>({
     instanceName: '',
     osName: '',
     databaseResourceList: [],
-    mappingId: 0,
-    verLogicalDeploymentArchId: 0,
+    mappingId: '',
+    verLogicalDeploymentArchId: '',
 })
 const getHostResource = () => {
     // 详情接口查询完后，再查询资源列表
@@ -275,12 +286,11 @@ const getHostResource = () => {
 }
 const getDBResource = () => {
     // 详情接口查询完后，再查询资源列表
-    // 详情接口查询完后，再查询资源列表
     const verLogicalDeploymentArchId = detailsData.value.verLogicalDeploymentArchitectureId
     detailsData.value.dbTypeList.forEach((element: any) => {
-        element.dbSpecList.forEach((spec: any, index: number) => {
+        element.dbSpecList.forEach((spec: any) => {
             const path = spec.czPath
-            spec.specList.forEach((group) => {
+            spec.specList.forEach((group: any) => {
                 const otherParam = `${element.dbType}_${group.dbVersion}_${group.osSystem}_${group.instanceName}`
                 const params = {
                     verLogicalDeploymentArchId,
@@ -294,7 +304,7 @@ const getDBResource = () => {
                         code: '0000000',
                         data: [
                             {
-                                id: 0,
+                                id: '11111',
                                 envId: 0,
                                 envName: '',
                                 softAppId: 0,
@@ -305,29 +315,30 @@ const getDBResource = () => {
                                 ip: '12.12.12',
                                 port: '9090',
                                 dbType: '',
-                                version: '1.2',
+                                version: '2C',
                                 instanceName: 'we',
                                 osName: '操作系统',
+                                osVersion: 'v2.0',
                                 status: 0,
                                 envResourceId: 0,
                                 databaseResourceList: [
                                     {
                                         id: 0,
                                         serviceId: 0,
-                                        dbName: 'db001',
-                                        charset: 'ee',
-                                        userName: '',
-                                        tablespaceName: '',
-                                        tablespaceSize: '',
-                                        shardingMethod: '',
+                                        dbName: 'tb_user001',
+                                        charset: 'UTF8',
+                                        userName: '用户名',
+                                        tablespaceName: 'apaasadm',
+                                        tablespaceSize: '40GB',
+                                        shardingMethod: '负载均衡',
                                         isDeleted: 0,
                                         createTime: '',
                                         updateTime: '',
                                     },
                                 ],
                                 selectedFlag: true,
-                                mappingId: 0,
-                                verLogicalDeploymentArchId: 0,
+                                mappingId: '909090',
+                                verLogicalDeploymentArchId: '23333',
                             },
                         ],
                     }
@@ -358,8 +369,6 @@ const currentEvent = ref<any>({
 const handleEdit = (event: any) => {
     console.log(event, 'eventeventeventeventevent')
     const { type, tableItem, tableIndex, resourceIndex, dataIndex, czPath, dbType } = event
-    // console.log(type, tableItem, 'tableItem', tableItem.resourceList[resourceIndex])
-
     const currentRecord = {
         ...tableItem,
         resourceList: [tableItem.resourceList[resourceIndex]],
@@ -375,31 +384,39 @@ const handleEdit = (event: any) => {
         const { softAppId, softAppCode } = detailsData.value
         ComponentEditRef.value?.showModel(currentRecord, type, softAppId, softAppCode)
     } else if (activeKey.value === 'infrastructure') {
-        // detailsData.value.dbTypeList[dataIndex].tableData[tableIndex].resource[resourceIndex] = {
-        //     ...currentRecord,
-        //     ...tableItem.resourceList[resourceIndex],
-        // }
-        // InfrastructureEditRef.value?.showModel(currentRecord, type)
+        const { softAppId, softAppCode } = detailsData.value
+        InfrastructureEditRef.value?.showModel(currentRecord, type, softAppId, softAppCode)
     }
 }
 
 const mappingIdList = ref<string[]>([])
 const mappingBOList = ref<any>([])
-// 删除机房配置
+// 删除配置
 const handleDelete = (event: any) => {
     const { tableIndex, resourceIndex, dataIndex } = event
     if (activeKey.value === 'component') {
         const resourceArr = detailsData.value.compDeploymentList[dataIndex].groupList[tableIndex].resourceList
         const currentResource = resourceArr[resourceIndex]
-        // 存储已有的分配主机删除的mappingId
+        // 存储已有的分配主机的mappingId
         if (currentResource.relationStatus !== 'add') mappingIdList.value.push(currentResource.mappingId)
         nextTick(() => {
             // 删除当前选择的分配主机，赋值初始值
             resourceArr.splice(resourceIndex, 1, { ...resourceHostInit.value })
         })
+    } else {
+        const resourceArr = detailsData.value.dbTypeList.find((v: any) => v.dbType === event.dbType)?.dbSpecList[
+            dataIndex
+        ].specList[tableIndex].resourceList
+        const currentResource = resourceArr[resourceIndex]
+        // 存储已有的分配基建服务的mappingId
+        if (currentResource.relationStatus !== 'add') mappingIdList.value.push(currentResource.mappingId)
+        nextTick(() => {
+            // 删除当前选择的分配基建服务，赋值初始值
+            resourceArr.splice(resourceIndex, 1, { ...resourceDBInit.value })
+        })
     }
 }
-// 编辑机房配置更新数据
+// 编辑配置更新数据
 const handleUpdateData = (newItem: any) => {
     const { dataIndex, tableIndex, resourceIndex, czPath, dbType } = currentEvent.value
     if (activeKey.value === 'component') {
@@ -408,8 +425,9 @@ const handleUpdateData = (newItem: any) => {
             resourceArr = currentGroupList.resourceList,
             currentResource = newItem.resourceList[0]
         const addStr = {
-            path: currentCompDeploymentList.czPath,
-            otherParamVisible: `${currentGroupList.groupName}_${currentGroupList.componentName}_${currentGroupList.componentVersion}_${currentResource.name}_${currentResource.ipAddress}`,
+            czPath,
+            // CZ+GROUP+组件+组件版本+主机名+IP
+            uniqueVerify: `${czPath}_${currentGroupList.groupName}_${currentGroupList.componentName}_${currentGroupList.componentVersion}_${currentResource.name}_${currentResource.ipAddress}`,
             relationType: 'HOST',
         }
         // 唯一性校验
@@ -422,20 +440,37 @@ const handleUpdateData = (newItem: any) => {
             ComponentEditRef.value?.hideModel()
         }
     } else {
-        // const currentCompDeploymentList = detailsData.value.dbTypeList[dataIndex],
-        //     currentGroupList = currentCompDeploymentList.groupList[tableIndex],
-        //     resourceArr = currentGroupList.resourceList,
-        //     currentItem = newItem.resourceList[0]
+        const currentDbSpecList = detailsData.value.dbTypeList.find((v: any) => v.dbType === dbType)?.dbSpecList[
+                dataIndex
+            ],
+            currentSpecList = currentDbSpecList.specList[tableIndex],
+            resourceArr = currentSpecList.resourceList,
+            currentResource = newItem.resourceList[0]
+
+        const addStr = {
+            dbType,
+            czPath,
+            // 基建类型（TDSQL）+部署节点(path)+数据库版本+操作系统+实例名称+IP+port
+            uniqueVerify: `${dbType}_${czPath}_${currentSpecList.dbVersion}_${currentSpecList.osSystem}_${currentSpecList.instanceName}_${currentResource.ip}_${currentResource.port}`,
+            relationType: 'DB',
+        }
+
+        // 唯一性校验
+        if (handleSubmitVisible(addStr)) {
+            message.error(`$${currentResource.ip}：$${currentResource.port}被部署多次，请检查！`)
+        } else {
+            // 使用 splice 替换，既修改了原数组，也是响应式的
+            message.success('新增成功')
+            resourceArr.splice(resourceIndex, 1, { ...currentResource })
+            InfrastructureEditRef.value?.hideModel()
+        }
     }
 }
 //点击确定按钮，校验
 const handleSubmitVisible = (addStr: any) => {
-    //     CZ+GROUP+组件+组件版本
-    const { path, otherParamVisible } = addStr
     let result = []
     if (activeKey.value === 'component') {
-        console.log(detailsData.value, 'detailsData.value2222')
-
+        // CZ+GROUP+组件+组件版本
         const { compDeploymentList } = detailsData.value
         result = compDeploymentList.flatMap((item: any) => {
             return item.groupList.flatMap((group: any) => {
@@ -447,15 +482,29 @@ const handleSubmitVisible = (addStr: any) => {
                     ) // 2. 满足条件的生成字符串
             })
         })
+    } else {
+        // 基建类型（TDSQL）+部署节点(path)+数据库版本+操作系统+实例名称+IP+端口
+        const { dbTypeList } = detailsData.value
+        result = dbTypeList.flatMap((item: any) => {
+            return item.dbSpecList.flatMap((dbSpec: any) => {
+                return dbSpec.specList.flatMap((spec: any) => {
+                    return spec.resourceList
+                        .filter((resource: any) => resource.ip || resource.port) // 1. 先过滤满足条件的资源
+                        .map(
+                            (resource: any) =>
+                                `${item.dbType}_${dbSpec.czPath}_${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}_${resource.ip}_${resource.port}`, //2. 满足条件的生成字符串
+                        )
+                })
+            })
+        })
     }
-    const str = `${path}_${otherParamVisible}`
+    const str = `${addStr.uniqueVerify}`
     const flag = result.some((v) => v === str)
     console.log(flag, str, result, '最终结果')
-
     return flag
 }
 const handleSave = () => {
-    const { compDeploymentList, dbTypeList, verLogicalDeploymentArchitectureId } = detailsData.value
+    const { compDeploymentList, dbTypeList } = detailsData.value
 
     const mappingAddHost = compDeploymentList.flatMap((item: any) => {
         return item.groupList.flatMap((group: any) => {
@@ -473,9 +522,24 @@ const handleSave = () => {
         })
     })
 
-    const mappingAddDb = []
+    const mappingAddDb = dbTypeList.flatMap((item: any) => {
+        return item.dbSpecList.flatMap((dbSpec: any) => {
+            return dbSpec.specList.flatMap((spec: any) => {
+                return spec.resourceList
+                    .filter((resource: any) => resource.relationStatus === 'add')
+                    .map((resource: any) => {
+                        return {
+                            verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
+                            path: dbSpec.czPath,
+                            otherParam: `${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}`,
+                            relationId: resource.relationId,
+                            relationType: resource.relationType,
+                        }
+                    })
+            })
+        })
+    })
     mappingBOList.value = [...mappingAddHost, ...mappingAddDb]
-    console.log(detailsData.value, 'save-detailsData.value')
     console.log(mappingIdList.value, 'save-delete')
     console.log(mappingBOList.value, 'save-add')
 }

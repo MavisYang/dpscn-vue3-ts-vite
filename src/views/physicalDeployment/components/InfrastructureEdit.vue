@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-09 14:24:15
+ * @LastEditTime: 2026-04-13 10:10:18
  * @Description: 
 -->
 <template>
@@ -13,10 +13,10 @@
                 :dataSource="[currentItem]"
                 :pagination="false"
                 :columns="[
-                    { title: '数据库版本', dataIndex: 'dbVersion', width: 200 },
-                    { title: '操作系统', dataIndex: 'os', width: 200 },
-                    { title: '实例名称', dataIndex: 'instanceName', width: 200 },
-                    { title: '实例数量', dataIndex: 'instanceCount', width: 200 },
+                    { title: '数据库版本', key: 'dbVersion', dataIndex: 'dbVersion', width: 200 },
+                    { title: '操作系统', key: 'osSystem', dataIndex: 'osSystem', width: 200 },
+                    { title: '实例名称', key: 'instanceName', dataIndex: 'instanceName', width: 200 },
+                    { title: '实例数量', key: 'instanceNum', dataIndex: 'instanceNum', width: 200 },
                 ]"
                 :scroll="{ x: 'max-content' }"
                 size="small"
@@ -25,16 +25,15 @@
 
             <div class="sub-section-title">数据库部署规格</div>
             <a-table
-                :dataSource="currentItem.database"
+                :dataSource="currentItem.otherSpecList"
                 :pagination="false"
                 :columns="[
-                    { title: '库名', dataIndex: 'dbName' },
-                    { title: '分片方式', dataIndex: 'shardingType' },
-                    { title: '表空间大小', dataIndex: 'tableSpaceSize' },
-                    { title: '表空间名称', dataIndex: 'tableSpaceName' },
-                    { title: '用户名', dataIndex: 'userName' },
-                    { title: '字符集', dataIndex: 'charset' },
-                    { title: '部署Schema', dataIndex: 'deploySchema' },
+                    { title: '库名', key: 'dbName', dataIndex: 'dbName' },
+                    { title: '分片方式', key: 'shardingMethod', dataIndex: 'shardingMethod' },
+                    { title: '表空间大小', key: 'tablespaceSize', dataIndex: 'tablespaceSize' },
+                    { title: '表空间名称', key: 'tablespaceName', dataIndex: 'tablespaceName' },
+                    { title: '用户名', key: 'userName', dataIndex: 'userName' },
+                    { title: 'schema', key: 'schemaName', dataIndex: 'schemaName' },
                 ]"
                 :scroll="{ x: 'max-content' }"
                 size="small"
@@ -48,41 +47,61 @@
                     {{ type === 'edit' ? '被分配资源' : '已分配资源' }}
                 </div>
                 <div v-if="type === 'edit'" class="resource-select-bar">
-                    <a-select placeholder="请选择IP" style="width: 150px" />
-                    <a-select placeholder="请选择PORT" style="width: 150px" />
-                    <a-select placeholder="请选择示例名称" style="width: 150px" />
+                    <a-input
+                        v-model:value="selectParams.ip"
+                        placeholder="请输入IP"
+                        style="width: 150px"
+                        allowClear
+                        @change="handleSearch"
+                    ></a-input>
+                    <a-input
+                        v-model:value="selectParams.port"
+                        placeholder="请选择PORT"
+                        style="width: 150px"
+                        allowClear
+                        @change="handleSearch"
+                    ></a-input>
+                    <a-input
+                        v-model:value="selectParams.instanceName"
+                        placeholder="请选择示例名称"
+                        style="width: 150px"
+                        allowClear
+                        @change="handleSearch"
+                    ></a-input>
                 </div>
             </div>
             <!-- 详情状态：查看已分配资源 -->
             <template v-if="type === 'view'">
                 <a-table
-                    :dataSource="currentItem.resource"
+                    :dataSource="currentItem.resourceList"
                     :key="(record: ResourceItem) => record.id"
                     :pagination="false"
                     :columns="[
-                        { title: 'IP', dataIndex: 'ip' },
-                        { title: 'Port', dataIndex: 'port' },
-                        { title: '数据库版本', dataIndex: 'version' },
-                        { title: '操作系统及版本', dataIndex: 'os' },
-                        { title: '实例名称', dataIndex: 'instanceName' },
+                        { title: 'IP', key: 'ip', dataIndex: 'ip' },
+                        { title: 'Port', key: 'port', dataIndex: 'port' },
+                        { title: '数据库版本', key: 'version', dataIndex: 'version' },
+                        { title: '操作系统及版本', key: 'os', dataIndex: 'os' },
+                        { title: '实例名称', key: 'instanceName', dataIndex: 'instanceName' },
                     ]"
                     :scroll="{ x: 'max-content' }"
                     :defaultExpandAllRows="true"
                 >
+                    <template #bodyCell="{ column, record }">
+                        <template v-if="column.key === 'os'"> {{ record.osName }}{{ record.osVersion }} </template>
+                    </template>
                     <template #expandedRowRender="{ record }">
                         <div class="expand-detail">
                             <div class="sub-section-title">数据库部署规格</div>
                             <a-table
-                                :dataSource="record.database"
+                                :dataSource="record.databaseResourceList"
                                 :pagination="false"
                                 :columns="[
-                                    { title: '库名', dataIndex: 'dbName' },
-                                    { title: '分片方式', dataIndex: 'shardingType' },
-                                    { title: '表空间大小', dataIndex: 'tableSpaceSize' },
-                                    { title: '表空间名称', dataIndex: 'tableSpaceName' },
-                                    { title: '用户名', dataIndex: 'userName' },
-                                    { title: '字符集', dataIndex: 'charset' },
-                                    { title: 'schema', dataIndex: 'deploySchema' },
+                                    { title: '库名', key: 'dbName', dataIndex: 'dbName' },
+                                    { title: '分片方式', key: 'shardingMethod', dataIndex: 'shardingMethod' },
+                                    { title: '表空间大小', key: 'tablespaceSize', dataIndex: 'tablespaceSize' },
+                                    { title: '表空间名称', key: 'tablespaceName', dataIndex: 'tablespaceName' },
+                                    { title: '用户名', key: 'userName', dataIndex: 'userName' },
+                                    { title: '字符集', key: 'charset', dataIndex: 'charset' },
                                 ]"
                                 :scroll="{ x: 'max-content' }"
                                 size="small"
@@ -95,32 +114,22 @@
             <!-- 编辑状态：选择资源-->
             <template v-else>
                 <a-table
-                    :data-source="resourceList"
+                    :data-source="dbList"
                     :pagination="false"
                     :row-key="(record: CZINFTableDataItem) => record.id"
                     :columns="[
-                        //   { title: '是否被关联', dataIndex: 'isRelated', width: 100 },
-                        // { title: 'ip', dataIndex: 'ip', width: 120 },
-                        // { title: '主机名', dataIndex: 'hostName', width: 120 },
-                        // { title: 'cpu', dataIndex: 'cpu', width: 80 },
-                        // { title: '内存', dataIndex: 'memory', width: 80 },
-                        // { title: '操作系统及版本', dataIndex: 'os', width: 150 },
-                        // { title: '文件系统概览', dataIndex: 'fileSystem', width: 150 },
-                        // { title: '安装软件概览', dataIndex: 'software', width: 150 },
-                        // {
-                        //     title: '操作',
-                        //     dataIndex: 'action',
-                        //     key: 'action',
-                        //     width: 120,
-                        // },
-
-                        { title: '是否被关联', dataIndex: 'isRelated', width: 100 },
-                        { title: 'IP', dataIndex: 'ip', width: 120 },
-                        { title: 'Port', dataIndex: 'port', width: 100 },
-                        { title: '数据库版本', dataIndex: 'dbVersion', width: 100 },
-                        { title: '操作系统及版本', dataIndex: 'os', width: 120 },
-                        { title: '实例名称', dataIndex: 'instanceName', width: 100 },
-                        { title: '数据库部署规格', dataIndex: 'database', width: 200 },
+                        { title: '是否被关联', key: 'selectedFlag', dataIndex: 'selectedFlag', width: 100 },
+                        { title: 'IP', key: 'ip', dataIndex: 'ip', width: 120 },
+                        { title: 'Port', key: 'port', dataIndex: 'port', width: 100 },
+                        { title: '数据库版本', key: 'dbVersion', dataIndex: 'dbVersion', width: 100 },
+                        { title: '操作系统及版本', key: 'os', dataIndex: 'os', width: 120 },
+                        { title: '实例名称', key: 'instanceName', dataIndex: 'instanceName', width: 100 },
+                        {
+                            title: '数据库部署规格',
+                            key: 'databaseResourceList',
+                            dataIndex: 'databaseResourceList',
+                            width: 200,
+                        },
                         {
                             title: '操作',
                             dataIndex: 'action',
@@ -139,14 +148,15 @@
                     }"
                 >
                     <template #bodyCell="{ column, record }">
-                        <template v-if="column.dataIndex === 'isRelated'">
-                            <span class="resource-is-related yes" v-if="record.isRelated === '1'">是</span>
+                        <template v-if="column.key === 'selectedFlag'">
+                            <span class="resource-is-related yes" v-if="record.selectedFlag">是</span>
                             <span class="resource-is-related no" v-else>否</span>
                         </template>
-                        <template v-else-if="column.dataIndex === 'database'">
-                            {{ record.database.map((item: DatabaseItem) => item.dbName).join(',') }}
+                        <template v-else-if="column.key === 'os'"> {{ record.osName }}{{ record.osVersion }} </template>
+                        <template v-else-if="column.key === 'databaseResourceList'">
+                            {{ record.databaseResourceList.map((item: ResourceINFItem) => item.dbName).join(',') }}
                         </template>
-                        <template v-else-if="column.dataIndex === 'action'">
+                        <template v-else-if="column.key === 'action'">
                             <a @click="toggleExpand(record)">
                                 <template v-if="expandedRowKeys.includes(record.id)">
                                     收起详情
@@ -170,10 +180,11 @@
                                         </div>
                                         <div class="list-item"><span class="label">端口：</span>{{ record.port }}</div>
                                         <div class="list-item">
-                                            <span class="label">数据库版本：</span>{{ record.dbVersion }}
+                                            <span class="label">数据库版本：</span>{{ record.version }}
                                         </div>
                                         <div class="list-item">
-                                            <span class="label">操作系统：</span>{{ record.os }}
+                                            <span class="label">操作系统：</span>{{ record.osName
+                                            }}{{ record.osVersion }}
                                         </div>
                                         <div class="list-item">
                                             <span class="label">实例名称：</span>{{ record.instanceName }}
@@ -184,27 +195,28 @@
                             <div class="resource-detail">
                                 <div class="sub-resource-title">部署规格:</div>
                                 <div class="sub-resource-desc">
-                                    <div v-for="(baseItem, index) in record.database" :key="index" class="list-row">
+                                    <div
+                                        v-for="(baseItem, index) in record.databaseResourceList"
+                                        :key="index"
+                                        class="list-row"
+                                    >
                                         <div class="list-item item-flex">
                                             <span class="label">库名：</span>{{ baseItem.dbName }}
                                         </div>
                                         <div class="list-item item-flex">
-                                            <span class="label">分片方式：</span>{{ baseItem.shardingType }}
+                                            <span class="label">分片方式：</span>{{ baseItem.shardingMethod }}
                                         </div>
                                         <div class="list-item item-flex">
-                                            <span class="label">表空间大小：</span>{{ baseItem.tableSpaceSize }}
+                                            <span class="label">表空间大小：</span>{{ baseItem.tablespaceSize }}
                                         </div>
                                         <div class="list-item item-flex">
-                                            <span class="label">表空间名称：</span>{{ baseItem.tableSpaceName }}
+                                            <span class="label">表空间名称：</span>{{ baseItem.tablespaceName }}
                                         </div>
                                         <div class="list-item item-flex">
                                             <span class="label">用户名：</span>{{ baseItem.userName }}
                                         </div>
                                         <div class="list-item item-flex">
                                             <span class="label">字符集：</span>{{ baseItem.charset }}
-                                        </div>
-                                        <div class="list-item item-flex">
-                                            <span class="label">Schema：</span>{{ baseItem.deploySchema }}
                                         </div>
                                     </div>
                                 </div>
@@ -217,7 +229,7 @@
 
         <template #footer>
             <div class="modal-footer" v-if="type === 'edit'">
-                <a-button @click="hideModal">取消</a-button>
+                <a-button @click="hideModel">取消</a-button>
                 <a-button type="primary" @click="handleConfirm">确定</a-button>
             </div>
         </template>
@@ -225,9 +237,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, nextTick } from 'vue'
-import { TableDataItem, CZINFTableDataItem, ResourceItem, IdType, DatabaseItem } from '../types'
+import { ref, computed, reactive, nextTick } from 'vue'
+import { CZINFTableDataItem, ResourceItem, IdType, ResourceINFItem } from '../types'
 import { UpOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
 
 const emit = defineEmits(['update:list'])
 const open = ref(false)
@@ -235,100 +248,171 @@ const type = ref('')
 const title = computed(() => (type.value === 'view' ? '查看详情' : '选择主机'))
 const formRef = ref()
 const currentItem = reactive<any>({})
+const selectParams = computed(() => ({
+    softAppId: '',
+    softAppCode: '',
+    ip: '',
+    port: '',
+    instanceName: '',
+}))
 
-const showModel = (record: TableDataItem, mode: string) => {
-    console.log(record, mode, 'record')
+const showModel = (record: CZINFTableDataItem, mode: string, softAppId: string, softAppCode: string) => {
+    console.log(record, mode, 'record--基建')
     type.value = mode
+    selectParams.value.softAppId = softAppId
+    selectParams.value.softAppCode = softAppCode
     Object.assign(currentItem, { ...JSON.parse(JSON.stringify(record)) }) // 深拷贝，防止修改时影响原数据
     open.value = true
-    getResourceList()
+    getDbList()
 }
 
-const hideModal = () => {
+const hideModel = () => {
     formRef.value?.resetFields()
     Object.assign(currentItem, {})
     open.value = false
     expandedRowKeys.value = []
     selectedRowKeys.value = []
 }
+const handleSearch = () => {
+    // 此处需要新增防抖
+    getDbList()
+}
 
-defineExpose({
-    showModel,
-})
 // 基建服务资源列表（编辑状态用）
-const resourceList = ref<CZINFTableDataItem[]>([])
-const getResourceList = () => {
+const dbList = ref<CZINFTableDataItem[]>([])
+const getDbList = () => {
+    console.log(selectParams.value, 'selectParams')
+
     const data = [
         {
-            id: 1,
-            ip: '12.2.2.2',
-            port: '1134',
-            dbVersion: '1.1.0',
-            os: 'Windows',
-            instanceName: 'instanceName001',
-            otherSpec: 'otherSpec001',
-            instanceCount: 3,
-            isRelated: '0',
-            // 数据库部署规格
-            database: [
-                // 库名 分片方式 表空间大小 表空间名称 用户名 字符集 部署 Schema
+            id: '9',
+            envId: '12222',
+            envName: '',
+            softAppId: '1222244',
+            softAppCode: '',
+            isDeleted: 0,
+            createTime: '',
+            updateTime: '',
+            ip: '12.12.12',
+            port: '9090',
+            dbType: '',
+            version: '2C',
+            instanceName: 'we',
+            osName: '操作系统',
+            osVersion: 'v2.0',
+            status: 0,
+            envResourceId: '122',
+            databaseResourceList: [
                 {
-                    dbName: 'dbName001',
-                    shardingType: 'shardingType001',
-                    tableSpaceSize: 'tableSpaceSize001',
-                    tableSpaceName: 'tableSpaceName001',
-                    userName: 'userName001',
-                    charset: 'charset001',
-                    deploySchema: 'deploySchema001',
+                    id: '1122',
+                    serviceId: '23223',
+                    dbName: 'tb_user001',
+                    charset: 'UTF8',
+                    userName: '用户名',
+                    tablespaceName: 'apaasadm',
+                    tablespaceSize: '40GB',
+                    shardingMethod: '负载均衡',
+                    isDeleted: 0,
+                    createTime: '',
+                    updateTime: '',
                 },
                 {
-                    dbName: 'dbName002',
-                    shardingType: 'shardingType002',
-                    tableSpaceSize: 'tableSpaceSize002',
-                    tableSpaceName: 'tableSpaceName002',
-                    userName: 'userName002',
-                    charset: 'charset002',
-                    deploySchema: 'deploySchema002',
+                    id: '322',
+                    serviceId: '23223',
+                    dbName: 'tb_user002',
+                    charset: 'UTF8',
+                    userName: '用户名2',
+                    tablespaceName: 'apaasadm2',
+                    tablespaceSize: '40GB',
+                    shardingMethod: '负载均衡2',
+                    isDeleted: 0,
+                    createTime: '',
+                    updateTime: '',
                 },
             ],
-            resource: [],
+            selectedFlag: true,
+            mappingId: '343434',
+            verLogicalDeploymentArchId: '434344',
+            relationId: 'relationId1',
         },
         {
-            id: 12,
-            ip: '12.2.2.2',
-            port: '1134',
-            dbVersion: '1.1.0',
-            os: 'Windows',
-            instanceName: 'instanceName001',
-            otherSpec: 'otherSpec001',
-            instanceCount: 3,
-            isRelated: '1',
-            // 数据库部署规格
-            database: [
-                // 库名 分片方式 表空间大小 表空间名称 用户名 字符集 部署 Schema
+            id: '10',
+            envId: '12222223333',
+            envName: '',
+            softAppId: '12222223333444',
+            softAppCode: '',
+            isDeleted: 0,
+            createTime: '',
+            updateTime: '',
+            ip: '12.12.13',
+            port: '9093',
+            dbType: '',
+            version: '2C',
+            instanceName: 'we',
+            osName: '操作系统',
+            osVersion: 'v2.0',
+            status: 0,
+            envResourceId: '12222',
+            databaseResourceList: [
                 {
-                    dbName: 'dbName001',
-                    shardingType: 'shardingType001',
-                    tableSpaceSize: 'tableSpaceSize001',
-                    tableSpaceName: 'tableSpaceName001',
-                    userName: 'userName001',
-                    charset: 'charset001',
-                    deploySchema: 'deploySchema001',
-                },
-                {
-                    dbName: 'dbName002',
-                    shardingType: 'shardingType002',
-                    tableSpaceSize: 'tableSpaceSize002',
-                    tableSpaceName: 'tableSpaceName002',
-                    userName: 'userName002',
-                    charset: 'charset002',
-                    deploySchema: 'deploySchema002',
+                    id: '122222',
+                    serviceId: '2333',
+                    dbName: 'tb_user001',
+                    charset: 'UTF8',
+                    userName: '用户名',
+                    tablespaceName: 'apaasadm',
+                    tablespaceSize: '40GB',
+                    shardingMethod: '负载均衡',
+                    isDeleted: 0,
+                    createTime: '',
+                    updateTime: '',
                 },
             ],
-            resource: [],
+            selectedFlag: false,
+            mappingId: '23444',
+            verLogicalDeploymentArchId: '12122',
+            relationId: 'relationId2',
+        },
+        {
+            id: '101',
+            envId: '1222222333331',
+            envName: '',
+            softAppId: '1222222333344431',
+            softAppCode: '',
+            isDeleted: 0,
+            createTime: '',
+            updateTime: '',
+            ip: '12.12.11',
+            port: '9091',
+            dbType: '',
+            version: '2C',
+            instanceName: 'we',
+            osName: '操作系统',
+            osVersion: 'v2.0',
+            status: 0,
+            envResourceId: '12222',
+            databaseResourceList: [
+                {
+                    id: '122222',
+                    serviceId: '2333',
+                    dbName: 'tb_user001',
+                    charset: 'UTF8',
+                    userName: '用户名',
+                    tablespaceName: 'apaasadm',
+                    tablespaceSize: '40GB',
+                    shardingMethod: '负载均衡',
+                    isDeleted: 0,
+                    createTime: '',
+                    updateTime: '',
+                },
+            ],
+            selectedFlag: false,
+            mappingId: '23444',
+            verLogicalDeploymentArchId: '12122',
+            relationId: 'relationId3',
         },
     ]
-    resourceList.value = data
+    dbList.value = data
     nextTick(() => {
         setTimeout(() => {
             toggleExpand(data[0])
@@ -358,28 +442,26 @@ const toggleExpand = (record: any) => {
 
 // 确定
 const handleConfirm = () => {
-    if (!currentItem) return
+    if (!selectedRowKeys.value.length) {
+        message.error('请选择基建服务')
+        return
+    }
     // 把选中的主机回填到resource
     setTimeout(() => {
-        const selectedHosts = resourceList.value.filter((resource) => selectedRowKeys.value.includes(resource.id))
-        const newResource: any[] = selectedHosts.map((resource) => ({
-            id: resource.id,
-            ip: resource.ip,
-            port: resource.port,
-            dbVersion: resource.dbVersion,
-            os: resource.os,
-            instanceName: resource.instanceName,
-            otherSpec: resource.otherSpec,
-            instanceCount: resource.instanceCount,
-            database: resource.database,
-        }))
-        currentItem.resource[0] = newResource[0]
-        // 更新数据
-        const newItem = { ...currentItem }
-        emit('update:list', newItem)
-        hideModal()
+        const selectedHost = dbList.value.find((resource) => selectedRowKeys.value.includes(resource.id))
+        currentItem.resourceList[0] = {
+            ...selectedHost,
+            relationType: 'DB',
+            relationStatus: 'add', // 新增标识，用于前端获取全部资源保存
+        }
+        emit('update:list', { ...currentItem })
     }, 300)
 }
+
+defineExpose({
+    showModel,
+    hideModel,
+})
 </script>
 
 <style scoped lang="scss">

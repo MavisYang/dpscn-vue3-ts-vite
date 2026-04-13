@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-10 11:10:02
+ * @LastEditTime: 2026-04-13 09:17:42
  * @Description:
  */
 
@@ -58,7 +58,7 @@ export interface DatabaseResourceItem {
     instanceName: string
     osName: string
     status: number
-    envResourceId: number
+    envResourceId: string
     databaseResourceList: DatabaseResourceItem[]
     selectedFlag: boolean
     mappingId: string
@@ -167,37 +167,40 @@ export interface CZINFDataItem {
 }
 
 export interface CZINFTableDataItem {
-    id: number | string
+    id: string
+    envId: string
+    envName: string
+    softAppId: string
+    softAppCode: string
+    isDeleted: number
+    createTime: string
+    updateTime: string
     ip: string
     port: string
-    dbVersion: string
-    os: string
+    dbType: string
+    version: string
     instanceName: string
-    otherSpec: string
-    instanceCount: number
-    selectedFlag: string
-    resource: ResourceINFItem[]
-    database: DatabaseItem[]
-}
-
-export interface ResourceINFItem {
-    // ip port 版本 操作系统 实例名 其他规格
-    id: number | string
-    ip: string
-    port: string
-    dbVersion: string
-    os: string
-    instanceName: string
-    otherSpec: string
+    osName: string
+    osVersion: string
+    status: number
+    envResourceId: string
+    databaseResourceList: ResourceINFItem[]
+    selectedFlag: boolean
+    mappingId: string
+    verLogicalDeploymentArchId: string
     [key: string]: any
 }
 
-export interface DatabaseItem {
+export interface ResourceINFItem {
+    id: string
+    serviceId: string
     dbName: string
-    shardingType: string
-    tableSpaceSize: string
-    tableSpaceName: string
-    userName: string
     charset: string
-    deploySchema: string
+    userName: string
+    tablespaceName: string
+    tablespaceSize: string
+    shardingMethod: string
+    isDeleted: number
+    createTime: string
+    updateTime: string
 }

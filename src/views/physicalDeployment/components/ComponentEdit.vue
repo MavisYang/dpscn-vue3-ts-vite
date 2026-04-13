@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-10 16:33:01
+ * @LastEditTime: 2026-04-13 09:25:21
  * @Description: 
 -->
 <template>
@@ -521,7 +521,7 @@ const handleConfirm = () => {
         const selectedHost = hostList.value.find((host) => selectedRowKeys.value.includes(host.id))
         currentItem.resourceList[0] = {
             ...selectedHost,
-            relationType: 'host',
+            relationType: 'HOST',
             relationStatus: 'add', // 新增标识，用于前端获取全部资源保存
         }
         emit('update:list', { ...currentItem })
