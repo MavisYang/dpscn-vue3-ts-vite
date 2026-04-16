@@ -133,7 +133,6 @@ const czData = computed(() => props.data)
 watch(
     () => props.data,
     (newVal) => {
-        console.log(newVal, 'newValprops.data')
         if (newVal) czActiveKey.value = newVal.map((v: any) => v.czPath)
     },
     { immediate: true },

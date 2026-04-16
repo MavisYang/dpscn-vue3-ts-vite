@@ -2,20 +2,19 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-07 10:13:28
+ * @LastEditTime: 2026-04-14 09:39:12
  * @Description: 
 -->
 <template>
     <div class="content-box mapping-box">
-        skdkk
         <div class="header">
-            <a-select>
+            <a-select style="width: 300px">
                 <a-select-option v-for="item in options" :key="item.value" :value="item.value">{{
                     item.label
                 }}</a-select-option>
             </a-select>
         </div>
-        <div class="">ARM物理部署映射</div>
+        <div class="">新的菜单</div>
     </div>
 </template>
 

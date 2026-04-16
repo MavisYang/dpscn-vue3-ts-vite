@@ -2,13 +2,14 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-13 10:25:00
+ * @LastEditTime: 2026-04-14 10:49:24
  * @Description: ARM物理部署映射
 -->
 <template>
     <div class="content-box mapping-box">
         <div class="header">
-            {{ selectValue }} {{ `$ ${detailsData.softAppCnName} - $${detailsData.envName}` }}
+            <span>{{ selectValue }}</span>
+            <span>{{ `$ ${detailsData?.softAppCnName} - $${detailsData?.envName}` }}</span>
             <a-button type="primary" @click="handleSave">保存</a-button>
         </div>
 
@@ -18,7 +19,7 @@
                 <a-tab-pane key="component" tab="组件部署">
                     <ComponentDeploy
                         ref="componentDeployRef"
-                        :data="detailsData.compDeploymentList"
+                        :data="detailsData?.compDeploymentList ?? []"
                         @update:view="handleEdit"
                         @update:edit="handleEdit"
                         @update:delete="handleDelete"
@@ -27,7 +28,7 @@
                 <a-tab-pane key="infrastructure" tab="基建服务部署">
                     <InfrastructureDeploy
                         ref="InfrastructureDeployRef"
-                        :data="detailsData.dbTypeList"
+                        :data="detailsData?.dbTypeList ?? []"
                         @update:view="handleEdit"
                         @update:edit="handleEdit"
                         @update:delete="handleDelete"
@@ -46,126 +47,14 @@ import ComponentDeploy from './components/ComponentDeploy.vue'
 import InfrastructureDeploy from './components/InfrastructureDeploy.vue'
 import ComponentEdit from './components/ComponentEdit'
 import InfrastructureEdit from './components/InfrastructureEdit.vue'
-import { HostResourceItem } from './types'
+import { CompDeploymentListType, GroupListType, HostResourceItem, DBResourceItem } from './types'
 import { message } from 'ant-design-vue'
+import { fetchDetails, fetchHostResourceItems, fetchDBResources } from './mockApi'
 
 const selectValue = ref('v0.4.16.0001-tmp-20251120-01')
 const activeKey = ref('component')
 const detailsData = ref<any>({})
-const getDetails = () => {
-    setTimeout(() => {
-        const res = {
-            code: '0000000',
-            message: '',
-            data: {
-                id: 1,
-                envId: 10,
-                envName: '环境标11',
-                softAppId: '202020200202020202',
-                softAppCode: 'APAAS.ADM',
-                softAppCnName: 'APAAS.ADM',
-                softAppEnName: 'datacenter',
-                logicalDeploymentArchitectureId: 0,
-                verLogicalDeploymentArchitectureId: 1110,
-                compDeploymentList: [
-                    {
-                        czPath: '全行/Region/AZ/LDC/SR/CZ1',
-                        groupList: [
-                            {
-                                id: 11,
-                                groupName: 'NOMAL',
-                                componentName: 'APAAS.AUTH.service',
-                                componentVersion: '1.2.0',
-                                compSpecCPU: '2核',
-                                compSpecMemory: '4G',
-                                compSpecInstanceNum: '2',
-                                osName: '麒麟',
-                                osVersion: 'v2.0',
-                                hostCPU: '4核',
-                                hostMemory: '8G',
-                                hostInstanceNum: 2,
-                                hostFileSystemList: [
-                                    {
-                                        id: 0,
-                                        hostSpecId: 0,
-                                        user: '/user1',
-                                        group: 'zhuzu',
-                                        mount: '/src/user',
-                                        size: '10G',
-                                    },
-                                    {
-                                        id: 10,
-                                        hostSpecId: 0,
-                                        user: '/user2',
-                                        group: 'group',
-                                        mount: '/src/user',
-                                        size: '10G',
-                                    },
-                                ],
-                                hostSoftwareList: [
-                                    {
-                                        id: 0,
-                                        hostSpecId: 0,
-                                        name: 'tomcat',
-                                        version: '7.8',
-                                        type: '客户端',
-                                        remark: '备注',
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-                dbTypeList: [
-                    {
-                        dbType: 'TDSQL',
-                        dbSpecList: [
-                            {
-                                czPath: '全行/Region/AZ/LDC/SR/CZ9',
-                                specList: [
-                                    {
-                                        id: '122',
-                                        dbVersion: '7.0',
-                                        osSystem: 'Windows',
-                                        instanceName: 'instanceName990',
-                                        instanceNum: 3,
-                                        otherSpecList: [
-                                            {
-                                                dbName: 'db001',
-                                                schemaName: 'schema001',
-                                                shardingMethod: 'shardingMethod001',
-                                                tablespaceName: 'tablespaceName001',
-                                                tablespaceSize: '10GB',
-                                                charset: 'dd',
-                                                userName: 'userName001',
-                                            },
-                                            {
-                                                dbName: 'db002',
-                                                schemaName: 'schema002',
-                                                shardingMethod: 'shardingMethod002',
-                                                tablespaceName: 'tablespaceName002',
-                                                tablespaceSize: '10GB',
-                                                charset: 'dd',
-                                                userName: 'userName002',
-                                            },
-                                        ],
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        }
-
-        if (res.code === '0000000') {
-            detailsData.value = res.data
-            getHostResource()
-            getDBResource()
-        }
-    }, 300)
-}
-const resourceHostInit = ref<any>({
+const resourceHostInit = ref<Partial<HostResourceItem>>({
     name: '',
     ipAddress: '',
     memoryGb: '',
@@ -177,7 +66,7 @@ const resourceHostInit = ref<any>({
     mappingId: '',
     verLogicalDeploymentArchId: '',
 })
-const resourceDBInit = ref<any>({
+const resourceDBInit = ref<Partial<DBResourceItem>>({
     ip: '',
     port: '',
     version: '',
@@ -187,175 +76,100 @@ const resourceDBInit = ref<any>({
     mappingId: '',
     verLogicalDeploymentArchId: '',
 })
-const getHostResource = () => {
-    // 详情接口查询完后，再查询资源列表
+
+// 获取详情数据
+const getDetails = async () => {
+    try {
+        const response = await fetchDetails()
+        if (response.code === '0000000') {
+            detailsData.value = response.data
+            // 并行获取主机资源和数据库资源
+            await Promise.all([getHostResourceItem(), getDBResource()])
+        }
+    } catch (error) {
+        console.error('获取详情失败:', error)
+    }
+}
+
+// 获取主机资源
+const getHostResourceItem = async () => {
+    if (!detailsData.value) return
+
     const verLogicalDeploymentArchId = detailsData.value.verLogicalDeploymentArchitectureId
-    detailsData.value.compDeploymentList.forEach((element: any) => {
+
+    // 并行请求所有主机资源
+    const requests: Promise<void>[] = []
+
+    detailsData.value.compDeploymentList.forEach((element: CompDeploymentListType) => {
         const path = element.czPath
 
-        element.groupList.forEach((group: any, index: number) => {
+        element.groupList.forEach((group: GroupListType) => {
             const otherParam = `${group.groupName}_${group.componentName}_${group.componentVersion}`
-            const params = {
-                verLogicalDeploymentArchId,
-                path,
-                otherParam,
-            }
-            console.log(params, 'params')
-            // 接口请求
-            setTimeout(() => {
-                const res = {
-                    code: '0000000',
-                    data: [
-                        {
-                            id: 1111111222222,
-                            envId: '',
-                            envname: '',
-                            softAppId: '122',
-                            softAppCode: '',
-                            isDeleted: 0,
-                            createTime: '',
-                            updateTime: '',
-                            name: 'host001',
-                            ipAddress: '12.22.122',
-                            memoryGb: '8G',
-                            cpuModel: '4G',
-                            osName: '麒麟',
-                            osVersion: 'v2.0',
-                            status: 0,
-                            envResourceId: 0,
-                            fileSystems: [
-                                {
-                                    id: 0,
-                                    hostId: 0,
-                                    mountPoint: '9.0',
-                                    fsType: '',
-                                    sizeGb: '10GB',
-                                    uid: '',
-                                    gid: '',
-                                    isDeleted: 0,
-                                    username: '/user01',
-                                    groupName: '主组',
-                                    createTime: '',
-                                    updateTime: '',
-                                },
-                                {
-                                    id: 10,
-                                    hostId: 0,
-                                    mountPoint: '1.0',
-                                    fsType: '',
-                                    sizeGb: '12GB',
-                                    uid: '',
-                                    gid: '',
-                                    isDeleted: 0,
-                                    username: 'user02',
-                                    groupName: 'groupName',
-                                },
-                            ],
-                            installedSoftwares: [
-                                {
-                                    id: 0,
-                                    hostId: 0,
-                                    softwareName: 'sd',
-                                    version: '2.1',
-                                    type: '中间件',
-                                    isDeleted: 0,
-                                    remark: '备注',
-                                    createTime: '',
-                                    updateTime: '',
-                                },
-                            ],
-                            selectedFlag: true,
-                            mappingId: '111111110',
-                            verLogicalDeploymentArchId: '21212220',
-                        },
-                    ],
-                }
 
-                const { code, data } = res
-                if (code === '0000000') {
-                    const emptyTableData = Array.from({ length: group.hostInstanceNum - (data?.length || 0) }, () => ({
-                        ...resourceHostInit.value,
-                        id: Math.random().toString().slice(2),
+            requests.push(
+                (async () => {
+                    const response = await fetchHostResourceItems({
                         verLogicalDeploymentArchId,
-                    }))
-                    group.resourceList = [...data, ...emptyTableData]
-                }
-            }, 300)
-        })
-    })
-}
-const getDBResource = () => {
-    // 详情接口查询完后，再查询资源列表
-    const verLogicalDeploymentArchId = detailsData.value.verLogicalDeploymentArchitectureId
-    detailsData.value.dbTypeList.forEach((element: any) => {
-        element.dbSpecList.forEach((spec: any) => {
-            const path = spec.czPath
-            spec.specList.forEach((group: any) => {
-                const otherParam = `${element.dbType}_${group.dbVersion}_${group.osSystem}_${group.instanceName}`
-                const params = {
-                    verLogicalDeploymentArchId,
-                    path,
-                    otherParam,
-                }
-                console.log(params, 'params')
-                // 接口请求
-                setTimeout(() => {
-                    const res = {
-                        code: '0000000',
-                        data: [
-                            {
-                                id: '11111',
-                                envId: 0,
-                                envName: '',
-                                softAppId: 0,
-                                softAppCode: '',
-                                isDeleted: 0,
-                                createTime: '',
-                                updateTime: '',
-                                ip: '12.12.12',
-                                port: '9090',
-                                dbType: '',
-                                version: '2C',
-                                instanceName: 'we',
-                                osName: '操作系统',
-                                osVersion: 'v2.0',
-                                status: 0,
-                                envResourceId: 0,
-                                databaseResourceList: [
-                                    {
-                                        id: 0,
-                                        serviceId: 0,
-                                        dbName: 'tb_user001',
-                                        charset: 'UTF8',
-                                        userName: '用户名',
-                                        tablespaceName: 'apaasadm',
-                                        tablespaceSize: '40GB',
-                                        shardingMethod: '负载均衡',
-                                        isDeleted: 0,
-                                        createTime: '',
-                                        updateTime: '',
-                                    },
-                                ],
-                                selectedFlag: true,
-                                mappingId: '909090',
-                                verLogicalDeploymentArchId: '23333',
-                            },
-                        ],
-                    }
+                        path,
+                        otherParam,
+                    })
 
-                    const { code, data } = res
-                    if (code === '0000000') {
-                        const emptyTableData = Array.from({ length: group.instanceNum - (data?.length || 0) }, () => ({
-                            ...resourceDBInit.value,
+                    if (response.code === '0000000') {
+                        const data = response.data || []
+                        const emptyTableData = Array.from({ length: group.hostInstanceNum - data.length }, () => ({
+                            ...resourceHostInit.value,
                             id: Math.random().toString().slice(2),
                             verLogicalDeploymentArchId,
                         }))
-                        group.resourceList = [...data, ...emptyTableData]
+                        group.resourceList = [...data, ...emptyTableData] as HostResourceItem[]
                     }
-                }, 300)
+                })(),
+            )
+        })
+    })
+
+    await Promise.all(requests)
+}
+
+// 获取数据库资源
+const getDBResource = async () => {
+    if (!detailsData.value) return
+
+    const verLogicalDeploymentArchId = detailsData.value.verLogicalDeploymentArchitectureId
+
+    // 并行请求所有数据库资源
+    const requests: Promise<void>[] = []
+
+    detailsData.value.dbTypeList.forEach((element) => {
+        element.dbSpecList.forEach((spec) => {
+            const path = spec.czPath
+            spec.specList.forEach((group) => {
+                const otherParam = `${element.dbType}_${group.dbVersion}_${group.osSystem}_${group.instanceName}`
+
+                requests.push(
+                    (async () => {
+                        const response = await fetchDBResources({
+                            verLogicalDeploymentArchId,
+                            path,
+                            otherParam,
+                        })
+
+                        if (response.code === '0000000') {
+                            const data = response.data || []
+                            const emptyTableData = Array.from({ length: group.instanceNum - data.length }, () => ({
+                                ...resourceDBInit.value,
+                                id: Math.random().toString().slice(2),
+                                verLogicalDeploymentArchId,
+                            }))
+                            group.resourceList = [...data, ...emptyTableData]
+                        }
+                    })(),
+                )
             })
         })
     })
+
+    await Promise.all(requests)
 }
 
 const ComponentEditRef = ref<InstanceType<typeof ComponentEdit>>()
@@ -380,11 +194,10 @@ const handleEdit = (event: any) => {
         czPath,
         dbType,
     }
+    const { softAppId, softAppCode } = detailsData.value
     if (activeKey.value === 'component') {
-        const { softAppId, softAppCode } = detailsData.value
         ComponentEditRef.value?.showModel(currentRecord, type, softAppId, softAppCode)
     } else if (activeKey.value === 'infrastructure') {
-        const { softAppId, softAppCode } = detailsData.value
         InfrastructureEditRef.value?.showModel(currentRecord, type, softAppId, softAppCode)
     }
 }
@@ -515,7 +328,7 @@ const handleSave = () => {
                         verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
                         path: item.czPath,
                         otherParam: `${group.groupName}_${group.componentName}_${group.componentVersion}`,
-                        relationId: resource.relationId,
+                        relationId: resource.id,
                         relationType: resource.relationType,
                     }
                 })
@@ -532,7 +345,7 @@ const handleSave = () => {
                             verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
                             path: dbSpec.czPath,
                             otherParam: `${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}`,
-                            relationId: resource.relationId,
+                            relationId: resource.id,
                             relationType: resource.relationType,
                         }
                     })
@@ -551,6 +364,9 @@ onMounted(() => {
 <style scoped lang="scss">
 .mapping-box {
     .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         background-color: #fff;
         padding: 20px;
 

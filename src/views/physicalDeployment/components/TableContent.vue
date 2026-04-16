@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-09 18:12:53
+ * @LastEditTime: 2026-04-14 09:43:38
  * @Description: 
 -->
 <template>
@@ -122,19 +122,35 @@
                                     <template v-if="resourceItem.ipAddress || resourceItem.ip">
                                         <a
                                             class="action-link view"
-                                            @click="emit('update:view', tableItem, tableIndex, resourceIndex)"
+                                            @click="
+                                                emit('update:view', {
+                                                    type: 'view',
+                                                    tableItem,
+                                                    tableIndex,
+                                                    resourceIndex,
+                                                })
+                                            "
                                             >查看</a
                                         >
                                         <a
                                             class="action-link delete"
-                                            @click="emit('update:delete', tableIndex, resourceIndex)"
+                                            @click="
+                                                emit('update:delete', { type: 'delete', tableIndex, resourceIndex })
+                                            "
                                             >删除</a
                                         >
                                     </template>
                                     <template v-else>
                                         <a
                                             class="action-link select"
-                                            @click="emit('update:edit', tableItem, tableIndex, resourceIndex)"
+                                            @click="
+                                                emit('update:edit', {
+                                                    type: 'edit',
+                                                    tableItem,
+                                                    tableIndex,
+                                                    resourceIndex,
+                                                })
+                                            "
                                             >选择{{ pageType === 'component' ? '主机' : '基建服务' }}</a
                                         >
                                     </template>

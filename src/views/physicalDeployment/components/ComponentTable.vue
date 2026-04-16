@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 15:25:37
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-10 15:20:17
+ * @LastEditTime: 2026-04-14 09:48:41
  * @Description: 
 -->
 <template>
@@ -14,9 +14,9 @@
                 :tableItem="item"
                 :tableIndex="index"
                 :tableColumns="tableColumns"
-                @update:view="handleView"
-                @update:edit="handleSelectHost"
-                @update:delete="handleDelete"
+                @update:view="handleEvent"
+                @update:edit="handleEvent"
+                @update:delete="handleEvent"
             />
         </div>
     </div>
@@ -29,9 +29,9 @@ import TableContent from './TableContent'
 const props = defineProps(['dataSource', 'tableColumns', 'dataIndex', 'pageType', 'czPath', 'dbType'])
 const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
 
-const handleView = (tableItem: any, tableIndex: number, resourceIndex: number) => {
+const handleEvent = ({ type, tableItem, tableIndex, resourceIndex }) => {
     const params = {
-        type: 'view',
+        type,
         tableItem,
         tableIndex,
         resourceIndex,
@@ -40,32 +40,12 @@ const handleView = (tableItem: any, tableIndex: number, resourceIndex: number) =
         czPath: props.czPath,
         dbType: props.dbType, // 基建部署会有该字段
     }
-
-    emit('update:view', params)
-}
-const handleSelectHost = (tableItem: any, tableIndex: number, resourceIndex: number) => {
-    const params = {
-        type: 'edit',
-        tableItem,
-        tableIndex,
-        resourceIndex,
-        dataIndex: props.dataIndex,
-        pageType: props.pageType,
-        czPath: props.czPath,
-        dbType: props.dbType,
+    const eventMap = {
+        view: 'update:view',
+        edit: 'update:edit',
+        delete: 'update:delete',
     }
-    emit('update:edit', params)
-}
-const handleDelete = (tableIndex: number, resourceIndex: number) => {
-    const params = {
-        tableIndex,
-        resourceIndex,
-        dataIndex: props.dataIndex,
-        pageType: props.pageType,
-        czPath: props.czPath,
-        dbType: props.dbType,
-    }
-    emit('update:delete', params)
+    emit(eventMap[type], params)
 }
 </script>
 

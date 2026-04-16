@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-13 09:25:21
+ * @LastEditTime: 2026-04-14 10:54:12
  * @Description: 
 -->
 <template>
@@ -105,7 +105,7 @@
             <template v-if="type === 'view'">
                 <a-table
                     :dataSource="currentItem.resourceList"
-                    :key="(record: ResourceItem) => record.id"
+                    :key="(record: GroupListType) => record.id"
                     :pagination="false"
                     :columns="[
                         { title: 'IP', key: 'ipAddress', dataIndex: 'ipAddress', width: 120 },
@@ -156,7 +156,7 @@
                 <a-table
                     :data-source="hostList"
                     :pagination="false"
-                    :row-key="(record: HostResourceItem) => record.id"
+                    :row-key="(record: GroupListType) => record.id"
                     :columns="[
                         { title: '是否被关联', key: 'selectedFlag', dataIndex: 'selectedFlag', width: 100 },
                         { title: 'ip', key: 'ipAddress', dataIndex: 'ipAddress', width: 120 },
@@ -305,7 +305,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, nextTick } from 'vue'
-import { HoatTableItem, HostResourceItem, ResourceItem } from '../types'
+import { GroupListType, HostResourceType } from '../types'
 import { UpOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 
@@ -323,7 +323,7 @@ const selectParams = computed(() => ({
     name: '',
 }))
 
-const showModel = (record: HoatTableItem, mode: string, softAppId: string, softAppCode: string) => {
+const showModel = (record: GroupListType, mode: string, softAppId: string, softAppCode: string) => {
     console.log(record, mode, softAppId, softAppCode, 'record')
     type.value = mode
     selectParams.value.softAppId = softAppId
@@ -346,7 +346,7 @@ const handleSearch = () => {
     getHostList()
 }
 // 主机列表（编辑状态用）
-const hostList = ref<HostResourceItem[]>([])
+const hostList = ref<HostResourceType[]>([])
 const getHostList = () => {
     console.log(selectParams.value, 'selectParamsselectParamsselectParams')
 

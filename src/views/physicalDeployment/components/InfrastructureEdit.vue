@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-13 10:10:18
+ * @LastEditTime: 2026-04-14 10:32:28
  * @Description: 
 -->
 <template>
@@ -40,7 +40,7 @@
             />
         </div>
 
-        <!-- 被分配主机（编辑/详情双状态） -->
+        <!-- 被分配资源（编辑/详情双状态） -->
         <div class="resource-modal-section">
             <div class="resource-section-header">
                 <div class="section-title">
@@ -74,7 +74,7 @@
             <template v-if="type === 'view'">
                 <a-table
                     :dataSource="currentItem.resourceList"
-                    :key="(record: ResourceItem) => record.id"
+                    :key="(record: DBResourceItem) => record.id"
                     :pagination="false"
                     :columns="[
                         { title: 'IP', key: 'ip', dataIndex: 'ip' },
@@ -238,7 +238,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, nextTick } from 'vue'
-import { CZINFTableDataItem, ResourceItem, IdType, ResourceINFItem } from '../types'
+import { CZINFTableDataItem, DBResourceItem, ResourceINFItem } from '../types'
 import { UpOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 
@@ -421,11 +421,11 @@ const getDbList = () => {
 }
 
 // 展开的行
-const expandedRowKeys = ref<IdType[]>([])
+const expandedRowKeys = ref<string[]>([])
 // 选中行
-const selectedRowKeys = ref<IdType[]>([])
+const selectedRowKeys = ref<string[]>([])
 // 选择行
-const onSelectRowChange = (keys: IdType[]) => {
+const onSelectRowChange = (keys: string[]) => {
     selectedRowKeys.value = keys
 }
 

@@ -2,11 +2,22 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-13 09:17:42
+ * @LastEditTime: 2026-04-14 17:39:58
  * @Description:
  */
 
-export interface HoatTableItem {
+// 组件部署定义类型 start
+//  compDeploymentList: [
+//         {
+//             czPath: '全行/Region/AZ/LDC/SR/CZ1',
+//             groupList: [
+
+export interface CompDeploymentListType {
+    czPath: string
+    groupList: GroupListType[]
+}
+
+export interface GroupListType {
     id: number | string
     groupName: string
     componentName: string
@@ -19,53 +30,25 @@ export interface HoatTableItem {
     hostCPU: string
     hostMemory: string
     hostInstanceNum: number
-    hostFileSystemList: FileSystemItem[]
-    hostSoftwareList: SoftwareItem[]
+    hostFileSystemList: HostFileType[]
+    hostSoftwareList: HostSoftType[]
+    resourceList?: HostResourceType[]
     [key: string]: any
 }
-
-export interface HostResourceItem {
-    id: string
-    envId: string
-    envName: string
-    softAppId: string
-    softAppCode: string
-    isDeleted: number
-    createTime: string
-    updateTime: string
+export interface HostResourceType {
+    id: number | string
     name: string
     ipAddress: string
     memoryGb: string
     cpuModel: string
     osName: string
     osVersion: string
-    status: number
-    envResourceId: string
-    fileSystems: HostResourceFileItem[]
-    installedSoftwares: HostResourceSoftItem[]
-    selectedFlag: boolean
-    mappingId: string
-    verLogicalDeploymentArchId: string
-    [key: string]: any
-}
-
-export interface DatabaseResourceItem {
-    id: string
-    ip: string
-    port: string
-    dbType: string
-    version: string
-    instanceName: string
-    osName: string
-    status: number
-    envResourceId: string
-    databaseResourceList: DatabaseResourceItem[]
-    selectedFlag: boolean
+    fileSystems: HostFileType[]
+    installedSoftwares: HostSoftType[]
     mappingId: string
     verLogicalDeploymentArchId: string
 }
-
-export interface HostResourceFileItem {
+export interface HostFileType {
     id: string
     hostId: string
     mountPoint: string
@@ -77,7 +60,7 @@ export interface HostResourceFileItem {
     username: string
     groupName: string
 }
-export interface HostResourceSoftItem {
+export interface HostSoftType {
     id: string
     hostId: string
     softwareName: string
@@ -88,56 +71,7 @@ export interface HostResourceSoftItem {
     createTime: string
     updateTime: string
 }
-export interface IdType {
-    id: number | string
-}
-export interface CZDataItem {
-    key: string
-    title: string
-    tableData: TableDataItem[]
-}
-
-export interface TableItem {
-    id: number | string
-    group: string
-    component: string
-    spec: string
-    hostSpec: string
-    fileSystem: string
-    software: string
-    instanceCount: number
-    resource: ResourceItem[]
-}
-
-export interface ResourceItem {
-    id: string
-    hostName: string
-    ip: string
-    cpu: string
-    memory: string
-    os: string
-    allocatedFileSystem: string
-    allocatedSoftware: string
-    osVersion: string
-}
-
-export interface TableDataItem {
-    id: number | string
-    groupName: string
-    componentName: string
-    componentVersion: string
-    compSpecCPU: string
-    compSpecMemory: string
-    compSpecInstanceNum: string
-    osName: string
-    osVersion: string
-    hostCPU: string
-    hostMemory: string
-    hostInstanceNum: number
-    hostFileSystemList: FileSystemItem[]
-    hostSoftwareList: SoftwareItem[]
-    [key: string]: any
-}
+// 组件部署定义类型 end
 
 export interface FileSystemItem {
     username: string
@@ -160,37 +94,25 @@ export interface ServiceType {
     value: string
 }
 
-export interface CZINFDataItem {
-    key: string
-    title: string
-    tableData: CZINFTableDataItem[]
-}
-
 export interface CZINFTableDataItem {
     id: string
-    envId: string
-    envName: string
-    softAppId: string
-    softAppCode: string
-    isDeleted: number
-    createTime: string
-    updateTime: string
-    ip: string
-    port: string
-    dbType: string
-    version: string
+    dbVersion: string
+    osSystem: string
     instanceName: string
-    osName: string
-    osVersion: string
-    status: number
-    envResourceId: string
-    databaseResourceList: ResourceINFItem[]
-    selectedFlag: boolean
-    mappingId: string
-    verLogicalDeploymentArchId: string
+    instanceNum: number
+    otherSpecList: OtherSpecListType[]
     [key: string]: any
 }
-
+export interface OtherSpecListType {
+    id: string
+    dbName: string
+    schemaName: string
+    shardingMethod: string
+    tablespaceName: string
+    tablespaceSize: string
+    charset: string
+    userName: string
+}
 export interface ResourceINFItem {
     id: string
     serviceId: string
@@ -203,4 +125,103 @@ export interface ResourceINFItem {
     isDeleted: number
     createTime: string
     updateTime: string
+}
+
+// 0000
+export interface ComponentGroup {
+    id: number
+    groupName: string
+    componentName: string
+    componentVersion: string
+    compSpecCPU: string
+    compSpecMemory: string
+    compSpecInstanceNum: string
+    osName: string
+    osVersion: string
+    hostCPU: string
+    hostMemory: string
+    hostInstanceNum: number
+    hostFileSystemList: HostFileSystem[]
+    hostSoftwareList: HostSoftware[]
+    resourceList?: any[] // 可根据实际情况定义更具体的类型
+}
+export interface HostFileSystem {
+    id: number
+    hostSpecId: number
+    user: string
+    group: string
+    mount: string
+    size: string
+}
+
+export interface HostSoftware {
+    id: number
+    hostSpecId: number
+    name: string
+    version: string
+    type: string
+    remark: string
+}
+
+export interface ComponentDeployment {
+    czPath: string
+    groupList: ComponentGroup[]
+}
+
+export interface DBResource {
+    id: string
+    dbName: string
+    schemaName: string
+    shardingMethod: string
+    tablespaceName: string
+    tablespaceSize: string
+    charset: string
+    userName: string
+}
+
+export interface DBSpec {
+    id: string
+    dbVersion: string
+    osSystem: string
+    instanceName: string
+    instanceNum: number
+    otherSpecList: DBResource[]
+    resourceList?: any[] // 可根据实际情况定义更具体的类型
+}
+
+export interface DBSpecItem {
+    czPath: string
+    specList: DBSpec[]
+}
+
+export interface DBType {
+    dbType: string
+    dbSpecList: DBSpecItem[]
+}
+export interface ApiResponse<T> {
+    code: string
+    message: string
+    data: T
+}
+
+export interface DBResourceItem {
+    id: string
+    ip: string
+    port: string
+    version: string
+    instanceName: string
+    osName: string
+    osVersion: string
+    databaseResourceList: any[]
+    mappingId: string
+    verLogicalDeploymentArchId: string
+}
+export interface DBDataBaseResourceList {
+    id: string
+    dbName: string
+    charset: string
+    userName: string
+    tablespaceName: string
+    tablespaceSize: string
+    shardingMethod: string
 }
