@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-14 10:49:24
+ * @LastEditTime: 2026-04-20 17:00:18
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -45,16 +45,16 @@
 import { onMounted, ref, nextTick } from 'vue'
 import ComponentDeploy from './components/ComponentDeploy.vue'
 import InfrastructureDeploy from './components/InfrastructureDeploy.vue'
-import ComponentEdit from './components/ComponentEdit'
+import ComponentEdit from './components/ComponentEdit.vue'
 import InfrastructureEdit from './components/InfrastructureEdit.vue'
-import { CompDeploymentListType, GroupListType, HostResourceItem, DBResourceItem } from './types'
+import { CompDeploymentListType, GroupListType, HostResourceType, DBResourceItem } from './types'
 import { message } from 'ant-design-vue'
 import { fetchDetails, fetchHostResourceItems, fetchDBResources } from './mockApi'
 
 const selectValue = ref('v0.4.16.0001-tmp-20251120-01')
 const activeKey = ref('component')
 const detailsData = ref<any>({})
-const resourceHostInit = ref<Partial<HostResourceItem>>({
+const resourceHostInit = ref<Partial<HostResourceType>>({
     name: '',
     ipAddress: '',
     memoryGb: '',
@@ -84,7 +84,7 @@ const getDetails = async () => {
         if (response.code === '0000000') {
             detailsData.value = response.data
             // 并行获取主机资源和数据库资源
-            await Promise.all([getHostResourceItem(), getDBResource()])
+            await Promise.allSettled([getHostResourceItem(), getDBResource()])
         }
     } catch (error) {
         console.error('获取详情失败:', error)
@@ -121,14 +121,14 @@ const getHostResourceItem = async () => {
                             id: Math.random().toString().slice(2),
                             verLogicalDeploymentArchId,
                         }))
-                        group.resourceList = [...data, ...emptyTableData] as HostResourceItem[]
+                        group.resourceList = [...data, ...emptyTableData] as HostResourceType[]
                     }
                 })(),
             )
         })
     })
 
-    await Promise.all(requests)
+    await Promise.allSettled(requests)
 }
 
 // 获取数据库资源
@@ -169,7 +169,8 @@ const getDBResource = async () => {
         })
     })
 
-    await Promise.all(requests)
+    //  Promise.allSettled 等待所有 Promise 结束（无论成功或失败），返回每个 Promise 的状态和结果
+    await Promise.allSettled(requests)
 }
 
 const ComponentEditRef = ref<InstanceType<typeof ComponentEdit>>()
@@ -280,7 +281,7 @@ const handleUpdateData = (newItem: any) => {
     }
 }
 //点击确定按钮，校验
-const handleSubmitVisible = (addStr: any) => {
+const handleSubmitVisible = (addStr: any): boolean => {
     let result = []
     if (activeKey.value === 'component') {
         // CZ+GROUP+组件+组件版本
