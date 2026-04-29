@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-20 17:00:18
+ * @LastEditTime: 2026-04-24 15:45:19
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -14,7 +14,7 @@
         </div>
 
         <div class="map-content">
-            <div class="title">{{ activeKey === 'component' ? '组件部署配置' : '基建服务部署配置' }}</div>
+            <div class="title">{{ ActiveKeyEnum[activeKey] }}</div>
             <a-tabs v-model:activeKey="activeKey">
                 <a-tab-pane key="component" tab="组件部署">
                     <ComponentDeploy
@@ -50,6 +50,12 @@ import InfrastructureEdit from './components/InfrastructureEdit.vue'
 import { CompDeploymentListType, GroupListType, HostResourceType, DBResourceItem } from './types'
 import { message } from 'ant-design-vue'
 import { fetchDetails, fetchHostResourceItems, fetchDBResources } from './mockApi'
+
+// const enum ActiveKeyEnum {} // 这是常量枚举 带const，不支持动态取值
+enum ActiveKeyEnum {
+    component = '组件部署配置',
+    infrastructure = '基建服务部署配置',
+}
 
 const selectValue = ref('v0.4.16.0001-tmp-20251120-01')
 const activeKey = ref('component')
@@ -182,6 +188,7 @@ const currentEvent = ref<any>({
 })
 // 操作：查看/选择主机
 const handleEdit = (event: any) => {
+    debugger
     console.log(event, 'eventeventeventeventevent')
     const { type, tableItem, tableIndex, resourceIndex, dataIndex, czPath, dbType } = event
     const currentRecord = {

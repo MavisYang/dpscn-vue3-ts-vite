@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2024-05-29 08:47:06
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2024-06-19 17:42:05
+ * @LastEditTime: 2026-04-28 17:33:09
  * @Description:
  */
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse } from 'axios'
@@ -18,7 +18,7 @@ import router from '@/routers'
 
 export interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
     loading?: boolean
-    cancel?: boolean
+    cancel?: boolean // 是否开启取消重复请求，默认为 true
 }
 const VITE_API_URL = import.meta.env.VITE_API_URL
 const config = {
@@ -29,7 +29,7 @@ const config = {
     // 跨域时候允许携带凭证
     // withCredentials: true
 }
-
+// 创建 axios 实例
 const axiosCanceler = new AxiosCanceler()
 
 class RequestHttp {

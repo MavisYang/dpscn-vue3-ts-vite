@@ -89,7 +89,7 @@
             "component": "/envResources/index",
             "meta": {
                 "icon": "MostlyCloudy",
-                "title": "APAAS管理",
+                "title": "APAAS/ARM/逻辑部署架构设计",
                 "isLink": "",
                 "isHide": false,
                 "isFull": false,

@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-14 10:54:12
+ * @LastEditTime: 2026-04-22 17:04:37
  * @Description: 
 -->
 <template>
@@ -21,6 +21,7 @@
                 ]"
                 :scroll="{ x: 'max-content' }"
                 size="small"
+                :locale="{ emptyText: '暂无数据' }"
             >
                 <template #bodyCell="{ column, record }">
                     <template v-if="column.key === 'compSpec'">
@@ -117,6 +118,7 @@
                     ]"
                     :scroll="{ x: 'max-content' }"
                     :defaultExpandAllRows="true"
+                    :locale="{ emptyText: '暂无数据' }"
                 >
                     <template #expandedRowRender="{ record }">
                         <div class="expand-detail">

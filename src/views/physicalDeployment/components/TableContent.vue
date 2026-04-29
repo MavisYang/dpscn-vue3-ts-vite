@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-14 09:43:38
+ * @LastEditTime: 2026-04-22 14:42:55
  * @Description: 
 -->
 <template>
@@ -255,6 +255,11 @@ const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
     /*==动态设置的class==*/
     /* 操作列 */
     .col-action {
+        position: sticky;
+        right: 0;
+        background-color: #fff;
+        z-index: 10;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
         gap: 10px;
 
         .action-link {

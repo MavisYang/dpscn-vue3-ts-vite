@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2024-05-29 10:15:58
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-03 17:35:40
+ * @LastEditTime: 2026-04-29 10:03:50
  * @Description: 数据源管理
 -->
 <template>
@@ -16,9 +16,10 @@
                 style="width: 280px"
                 allowClear
                 show-search
+                :filter-option="true"
                 @change="hanldeChangeEnv"
             >
-                <a-select-option v-for="item in envOptions" :key="item.id" :value="item.id">
+                <a-select-option v-for="item in envOptions" :key="item.id" :value="item.id" :label="item.enName">
                     {{ item.enName }}
                 </a-select-option>
             </a-select>

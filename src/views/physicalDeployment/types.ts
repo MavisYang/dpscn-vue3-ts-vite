@@ -2,23 +2,19 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-14 17:39:58
+ * @LastEditTime: 2026-04-24 10:10:59
  * @Description:
  */
-
-// 组件部署定义类型 start
-//  compDeploymentList: [
-//         {
-//             czPath: '全行/Region/AZ/LDC/SR/CZ1',
-//             groupList: [
-
+// 类型别名
+type IdType = number | string
+type Status = 'pending' | 'success' | 'error'
 export interface CompDeploymentListType {
     czPath: string
     groupList: GroupListType[]
 }
-
+// 接口定义
 export interface GroupListType {
-    id: number | string
+    id: IdType
     groupName: string
     componentName: string
     componentVersion: string
@@ -36,7 +32,7 @@ export interface GroupListType {
     [key: string]: any
 }
 export interface HostResourceType {
-    id: number | string
+    id: IdType
     name: string
     ipAddress: string
     memoryGb: string
@@ -49,7 +45,7 @@ export interface HostResourceType {
     verLogicalDeploymentArchId: string
 }
 export interface HostFileType {
-    id: string
+    id: IdType
     hostId: string
     mountPoint: string
     fsType: string

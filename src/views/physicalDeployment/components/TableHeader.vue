@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:38:44
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-08 18:46:20
+ * @LastEditTime: 2026-04-22 14:42:48
  * @Description: 
 -->
 <template>
@@ -79,7 +79,11 @@ const props = defineProps(['tableColumns'])
     }
     /*==动态设置的class==*/
     .action-cell {
-        background-color: #fff;
+        position: sticky;
+        right: 0; /* 紧贴右侧 */
+        background-color: #fff; /* 必须设置背景色，否则会透出后面的文字 */
+        z-index: 10; /* 确保在滚动内容之上 */
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05); /* 可选：加点阴影增加层次感 */
     }
 }
 </style>
