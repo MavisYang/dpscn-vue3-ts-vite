@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-22 17:04:37
+ * @LastEditTime: 2026-04-30 09:28:35
  * @Description: 
 -->
 <template>
@@ -505,6 +505,7 @@ const onSelectRowChange = (keys: string[]) => {
 
 // 展开/收起
 const toggleExpand = (record: any) => {
+    if (!record) return
     const id = record.id
     const keys = expandedRowKeys.value
     expandedRowKeys.value = keys.includes(id) ? keys.filter((item) => item !== id) : [...keys, id]
