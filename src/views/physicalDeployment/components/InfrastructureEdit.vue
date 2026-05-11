@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-30 09:28:30
+ * @LastEditTime: 2026-05-11 17:31:32
  * @Description: 
 -->
 <template>
@@ -237,10 +237,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, nextTick } from 'vue'
+import { ref, computed, reactive, nextTick, ComputedRef } from 'vue'
 import { CZINFTableDataItem, DBResourceItem, ResourceINFItem } from '../types'
 import { UpOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
+import { fetchDBResourcesEdit } from '../mockApi'
 
 const emit = defineEmits(['update:list'])
 const open = ref(false)
@@ -248,7 +249,13 @@ const type = ref('')
 const title = computed(() => (type.value === 'view' ? '查看详情' : '选择主机'))
 const formRef = ref()
 const currentItem = reactive<any>({})
-const selectParams = computed(() => ({
+const selectParams: ComputedRef<{
+    softAppId: string
+    softAppCode: string
+    ip: string
+    port: string
+    instanceName: string
+}> = computed(() => ({
     softAppId: '',
     softAppCode: '',
     ip: '',
@@ -280,144 +287,17 @@ const handleSearch = () => {
 
 // 基建服务资源列表（编辑状态用）
 const dbList = ref<CZINFTableDataItem[]>([])
-const getDbList = () => {
+const getDbList = async () => {
     console.log(selectParams.value, 'selectParams')
-
-    const data = [
-        {
-            id: '9',
-            envId: '12222',
-            envName: '',
-            softAppId: '1222244',
-            softAppCode: '',
-            isDeleted: 0,
-            createTime: '',
-            updateTime: '',
-            ip: '12.12.12',
-            port: '9090',
-            dbType: '',
-            version: '2C',
-            instanceName: 'we',
-            osName: '操作系统',
-            osVersion: 'v2.0',
-            status: 0,
-            envResourceId: '122',
-            databaseResourceList: [
-                {
-                    id: '1122',
-                    serviceId: '23223',
-                    dbName: 'tb_user001',
-                    charset: 'UTF8',
-                    userName: '用户名',
-                    tablespaceName: 'apaasadm',
-                    tablespaceSize: '40GB',
-                    shardingMethod: '负载均衡',
-                    isDeleted: 0,
-                    createTime: '',
-                    updateTime: '',
-                },
-                {
-                    id: '322',
-                    serviceId: '23223',
-                    dbName: 'tb_user002',
-                    charset: 'UTF8',
-                    userName: '用户名2',
-                    tablespaceName: 'apaasadm2',
-                    tablespaceSize: '40GB',
-                    shardingMethod: '负载均衡2',
-                    isDeleted: 0,
-                    createTime: '',
-                    updateTime: '',
-                },
-            ],
-            selectedFlag: true,
-            mappingId: '343434',
-            verLogicalDeploymentArchId: '434344',
-            relationId: 'relationId1',
-        },
-        {
-            id: '10',
-            envId: '12222223333',
-            envName: '',
-            softAppId: '12222223333444',
-            softAppCode: '',
-            isDeleted: 0,
-            createTime: '',
-            updateTime: '',
-            ip: '12.12.13',
-            port: '9093',
-            dbType: '',
-            version: '2C',
-            instanceName: 'we',
-            osName: '操作系统',
-            osVersion: 'v2.0',
-            status: 0,
-            envResourceId: '12222',
-            databaseResourceList: [
-                {
-                    id: '122222',
-                    serviceId: '2333',
-                    dbName: 'tb_user001',
-                    charset: 'UTF8',
-                    userName: '用户名',
-                    tablespaceName: 'apaasadm',
-                    tablespaceSize: '40GB',
-                    shardingMethod: '负载均衡',
-                    isDeleted: 0,
-                    createTime: '',
-                    updateTime: '',
-                },
-            ],
-            selectedFlag: false,
-            mappingId: '23444',
-            verLogicalDeploymentArchId: '12122',
-            relationId: 'relationId2',
-        },
-        {
-            id: '101',
-            envId: '1222222333331',
-            envName: '',
-            softAppId: '1222222333344431',
-            softAppCode: '',
-            isDeleted: 0,
-            createTime: '',
-            updateTime: '',
-            ip: '12.12.11',
-            port: '9091',
-            dbType: '',
-            version: '2C',
-            instanceName: 'we',
-            osName: '操作系统',
-            osVersion: 'v2.0',
-            status: 0,
-            envResourceId: '12222',
-            databaseResourceList: [
-                {
-                    id: '122222',
-                    serviceId: '2333',
-                    dbName: 'tb_user001',
-                    charset: 'UTF8',
-                    userName: '用户名',
-                    tablespaceName: 'apaasadm',
-                    tablespaceSize: '40GB',
-                    shardingMethod: '负载均衡',
-                    isDeleted: 0,
-                    createTime: '',
-                    updateTime: '',
-                },
-            ],
-            selectedFlag: false,
-            mappingId: '23444',
-            verLogicalDeploymentArchId: '12122',
-            relationId: 'relationId3',
-        },
-    ]
-    dbList.value = data
-    nextTick(() => {
-        setTimeout(() => {
-            toggleExpand(data[0])
-        }, 50)
-    })
+    const response = await fetchDBResourcesEdit(selectParams.value)
+    if (response.code === '0000000') {
+        dbList.value = response.data
+        nextTick(() => {
+            setTimeout(() => {
+                toggleExpand(response.data[0])
+            }, 50)
+        })
+    }
 }
 
 // 展开的行

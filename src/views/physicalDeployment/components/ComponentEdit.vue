@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-30 09:28:35
+ * @LastEditTime: 2026-05-11 17:33:29
  * @Description: 
 -->
 <template>
@@ -310,6 +310,7 @@ import { ref, computed, reactive, nextTick } from 'vue'
 import { GroupListType, HostResourceType } from '../types'
 import { UpOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
+import { fetchHostResourceEdit } from '../mockApi'
 
 const emit = defineEmits(['update:list'])
 
@@ -349,140 +350,10 @@ const handleSearch = () => {
 }
 // 主机列表（编辑状态用）
 const hostList = ref<HostResourceType[]>([])
-const getHostList = () => {
+const getHostList = async () => {
     console.log(selectParams.value, 'selectParamsselectParamsselectParams')
-
     // 获取环境资源主机规格列表
-    const res = {
-        code: '0000000',
-        data: [
-            {
-                id: '1111111222222',
-                envId: '',
-                envName: '',
-                softAppId: '122',
-                softAppCode: '',
-                isDeleted: 0,
-                createTime: '',
-                updateTime: '',
-                name: 'host001',
-                ipAddress: '12.22.123',
-                memoryGb: '8G',
-                cpuModel: '4G',
-                osName: '麒麟',
-                osVersion: 'v2.0',
-                status: 0,
-                envResourceId: '12222',
-                fileSystems: [
-                    {
-                        id: '10',
-                        hostId: '12',
-                        mountPoint: '9.0',
-                        fsType: '',
-                        sizeGb: '10GB',
-                        uid: '',
-                        gid: '',
-                        isDeleted: 0,
-                        username: '/user01',
-                        groupName: '主组',
-                        createTime: '',
-                        updateTime: '',
-                    },
-                    {
-                        id: '1100',
-                        hostId: '1222',
-                        mountPoint: '1.0',
-                        fsType: '',
-                        sizeGb: '12GB',
-                        uid: '',
-                        gid: '',
-                        isDeleted: 0,
-                        username: 'user02',
-                        groupName: 'groupName',
-                    },
-                ],
-                installedSoftwares: [
-                    {
-                        id: '2323',
-                        hostId: '1212',
-                        softwareName: 'sd',
-                        version: '2.1',
-                        type: '中间件',
-                        isDeleted: 0,
-                        remark: '备注',
-                        createTime: '',
-                        updateTime: '',
-                    },
-                ],
-                selectedFlag: true,
-                mappingId: '1222',
-                verLogicalDeploymentArchId: '19121',
-            },
-            {
-                id: '222222',
-                envId: '',
-                envName: '',
-                softAppId: '122',
-                softAppCode: '',
-                isDeleted: 0,
-                createTime: '',
-                updateTime: '',
-                name: 'host001',
-                ipAddress: '12.22.122',
-                memoryGb: '8G',
-                cpuModel: '4G',
-                osName: '麒麟',
-                osVersion: 'v2.0',
-                status: 0,
-                envResourceId: '12222',
-                fileSystems: [
-                    {
-                        id: '10',
-                        hostId: '12',
-                        mountPoint: '9.0',
-                        fsType: '',
-                        sizeGb: '10GB',
-                        uid: '',
-                        gid: '',
-                        isDeleted: 0,
-                        username: '/user01',
-                        groupName: '主组',
-                        createTime: '',
-                        updateTime: '',
-                    },
-                    {
-                        id: '1100',
-                        hostId: '1222',
-                        mountPoint: '1.0',
-                        fsType: '',
-                        sizeGb: '12GB',
-                        uid: '',
-                        gid: '',
-                        isDeleted: 0,
-                        username: 'user02',
-                        groupName: 'groupName',
-                    },
-                ],
-                installedSoftwares: [
-                    {
-                        id: '2323',
-                        hostId: '1212',
-                        softwareName: 'sd',
-                        version: '2.1',
-                        type: '中间件',
-                        isDeleted: 0,
-                        remark: '备注',
-                        createTime: '',
-                        updateTime: '',
-                    },
-                ],
-                selectedFlag: false,
-                mappingId: '1222',
-                verLogicalDeploymentArchId: '19121',
-                relationId: 'dww',
-            },
-        ],
-    }
+    const res = await fetchHostResourceEdit(selectParams.value)
     const { code, data } = res
     if (code === '0000000') {
         hostList.value = data
