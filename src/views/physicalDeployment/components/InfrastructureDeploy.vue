@@ -5,19 +5,15 @@
         <template v-for="(czItem, czIndex) in czData" :key="`${czItem.dbType}_${czIndex}`">
             <div class="dbType">{{ czItem.dbType }}</div>
             <a-collapse v-model:activeKey="czActiveKey" class="deployment-collapse">
-                <a-collapse-panel
-                    v-for="(value, index) in czItem.dbSpecList"
-                    :key="value.czPath"
-                    :header="value.czPath"
-                >
+                <a-collapse-panel v-for="(value, index) in czItem.dbSpecList" :key="value.path" :header="value.path">
                     <ComponentTable
                         pageType="infrastructure"
-                        :key="`${value.czPath}_infrastructure`"
+                        :key="`${value.path}_infrastructure`"
                         :tableColumns="tableColumns"
                         :dataSource="value.specList"
                         :dataIndex="index"
                         :dbType="czItem.dbType"
-                        :czPath="value.czPath"
+                        :path="value.path"
                         @update:view="emit('update:view', $event)"
                         @update:edit="emit('update:edit', $event)"
                         @update:delete="emit('update:delete', $event)"
@@ -108,7 +104,7 @@ watch(
     (newVal) => {
         console.log(newVal, 'newValprops.data')
         if (newVal) {
-            const czPaths = newVal.flatMap((item) => item.dbSpecList.map((spec) => spec.czPath))
+            const czPaths = newVal.flatMap((item) => item.dbSpecList.map((spec) => spec.path))
             czActiveKey.value = czPaths
         }
     },

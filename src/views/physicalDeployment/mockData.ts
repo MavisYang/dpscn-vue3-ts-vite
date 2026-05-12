@@ -12,7 +12,7 @@ export const getMockDetailsData = () => ({
     verLogicalDeploymentArchitectureId: 1110,
     compDeploymentList: [
         {
-            czPath: '全行/Region/AZ/LDC/SR/CZ1',
+            path: '全行/Region/AZ/LDC/SR/CZ1',
             groupList: [
                 {
                     id: 11,
@@ -101,7 +101,7 @@ export const getMockDetailsData = () => ({
             ],
         },
         {
-            czPath: '全行/Region/AZ/LDC/SR/CZ2222',
+            path: '全行/Region/AZ/LDC/SR/CZ2222',
             groupList: [
                 {
                     id: 11333,
@@ -195,7 +195,7 @@ export const getMockDetailsData = () => ({
             dbType: 'TDSQL',
             dbSpecList: [
                 {
-                    czPath: '全行/Region/AZ/LDC/SR/CZ9',
+                    path: '全行/Region/AZ/LDC/SR/CZ9',
                     specList: [
                         {
                             id: '122',
@@ -229,7 +229,7 @@ export const getMockDetailsData = () => ({
                     ],
                 },
                 {
-                    czPath: '全行/Region/AZ/LDC/SR/CZ10',
+                    path: '全行/Region/AZ/LDC/SR/CZ10',
                     specList: [
                         {
                             id: '1220',
@@ -271,7 +271,7 @@ export const getMockHostResourceItems = (): HostResourceItem[] => [
     {
         id: 1111111222222,
         name: 'host001',
-        ipAddress: '12.22.122',
+        ipAddress: '12.22.110',
         memoryGb: '8G',
         cpuModel: '4G',
         osName: '麒麟',
@@ -342,7 +342,7 @@ export const getHostResourceEdit = () => [
         createTime: '',
         updateTime: '',
         name: 'host001',
-        ipAddress: '12.22.1211',
+        ipAddress: '12.22.120',
         memoryGb: '8G',
         cpuModel: '4G',
         osName: '麒麟',
@@ -404,7 +404,7 @@ export const getHostResourceEdit = () => [
         createTime: '',
         updateTime: '',
         name: 'host002',
-        ipAddress: '12.22.1221',
+        ipAddress: '12.22.130',
         memoryGb: '8G',
         cpuModel: '4G',
         osName: '麒麟',
@@ -469,7 +469,7 @@ export const getDBResourceEdit = () => [
         isDeleted: 0,
         createTime: '',
         updateTime: '',
-        ip: '12.12.12',
+        ip: '12.12.13',
         port: '9090',
         dbType: '',
         version: '2C',
@@ -520,7 +520,7 @@ export const getDBResourceEdit = () => [
         isDeleted: 0,
         createTime: '',
         updateTime: '',
-        ip: '12.12.13',
+        ip: '12.12.14',
         port: '9093',
         dbType: '',
         version: '2C',
@@ -558,7 +558,7 @@ export const getDBResourceEdit = () => [
         isDeleted: 0,
         createTime: '',
         updateTime: '',
-        ip: '12.12.11',
+        ip: '12.12.15',
         port: '9091',
         dbType: '',
         version: '2C',

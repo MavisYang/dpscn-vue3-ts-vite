@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-22 14:42:55
+ * @LastEditTime: 2026-05-12 08:48:03
  * @Description: 
 -->
 <template>
@@ -19,7 +19,7 @@
                         >
                             <!-- 主机 -->
                             <template v-if="columnsChild.key === 'nameAndVersion'">
-                                <span>{{ tableItem.componentName }} {{ tableItem.componentVersion }}</span>
+                                <span>{{ tableItem.componentName }},{{ tableItem.componentVersion }}</span>
                             </template>
                             <template v-else-if="columnsChild.key === 'compSpec'">
                                 <span
@@ -128,6 +128,7 @@
                                                     tableItem,
                                                     tableIndex,
                                                     resourceIndex,
+                                                    resourceId: resourceItem.id,
                                                 })
                                             "
                                             >查看</a
@@ -135,7 +136,13 @@
                                         <a
                                             class="action-link delete"
                                             @click="
-                                                emit('update:delete', { type: 'delete', tableIndex, resourceIndex })
+                                                emit('update:delete', {
+                                                    type: 'delete',
+                                                    tableItem,
+                                                    tableIndex,
+                                                    resourceIndex,
+                                                    resourceId: resourceItem.id,
+                                                })
                                             "
                                             >删除</a
                                         >
@@ -149,6 +156,7 @@
                                                     tableItem,
                                                     tableIndex,
                                                     resourceIndex,
+                                                    resourceId: resourceItem.id,
                                                 })
                                             "
                                             >选择{{ pageType === 'component' ? '主机' : '基建服务' }}</a

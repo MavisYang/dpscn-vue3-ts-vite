@@ -13,7 +13,7 @@
         "verLogicalDeploymentArchitectureId": 1110,
         "compDeploymentList": [
             {
-                "czPath": "全行/Region/AZ/LDC/SR/CZ1",
+                "path": "全行/Region/AZ/LDC/SR/CZ1",
                 "groupList": [
                     {
                         "id": 11,
@@ -196,7 +196,7 @@
                 "dbType": "TDSQL",
                 "dbSpecList": [
                     {
-                        "czPath": "全行/Region/AZ/LDC/SR/CZ1",
+                        "path": "全行/Region/AZ/LDC/SR/CZ1",
                         "specList": [
                             {
                                 "dbVersion": "7.0",

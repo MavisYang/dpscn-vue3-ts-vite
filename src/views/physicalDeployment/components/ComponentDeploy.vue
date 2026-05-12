@@ -2,14 +2,14 @@
     <div class="deployment-page">
         <div class="page-header">配置详情</div>
         <a-collapse v-model:activeKey="czActiveKey" class="deployment-collapse">
-            <a-collapse-panel v-for="(value, index) in czData" :key="value.czPath" :header="value.czPath">
+            <a-collapse-panel v-for="(value, index) in czData" :key="value.path" :header="value.path">
                 <ComponentTable
                     pageType="component"
-                    :key="`${value.czPath}_component`"
+                    :key="`${value.path}_component`"
                     :tableColumns="tableColumns"
                     :dataSource="value.groupList"
                     :dataIndex="index"
-                    :czPath="value.czPath"
+                    :path="value.path"
                     @update:view="emit('update:view', $event)"
                     @update:edit="emit('update:edit', $event)"
                     @update:delete="emit('update:delete', $event)"
@@ -133,7 +133,7 @@ const czData = computed(() => props.data)
 watch(
     () => props.data,
     (newVal) => {
-        if (newVal) czActiveKey.value = newVal.map((v: any) => v.czPath)
+        if (newVal) czActiveKey.value = newVal.map((v: any) => v.path)
     },
     { immediate: true },
 )

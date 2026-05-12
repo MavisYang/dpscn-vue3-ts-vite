@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 15:25:37
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-14 09:48:41
+ * @LastEditTime: 2026-05-12 09:52:34
  * @Description: 
 -->
 <template>
@@ -26,18 +26,19 @@
 import TableHeader from './TableHeader'
 import TableContent from './TableContent'
 
-const props = defineProps(['dataSource', 'tableColumns', 'dataIndex', 'pageType', 'czPath', 'dbType'])
+const props = defineProps(['dataSource', 'tableColumns', 'dataIndex', 'pageType', 'path', 'dbType'])
 const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
 
-const handleEvent = ({ type, tableItem, tableIndex, resourceIndex }) => {
+const handleEvent = ({ type, tableItem, tableIndex, resourceIndex, resourceId }) => {
     const params = {
         type,
         tableItem,
         tableIndex,
         resourceIndex,
+        resourceId,
         dataIndex: props.dataIndex,
         pageType: props.pageType,
-        czPath: props.czPath,
+        path: props.path,
         dbType: props.dbType, // 基建部署会有该字段
     }
     const eventMap = {

@@ -2,14 +2,14 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-24 10:10:59
+ * @LastEditTime: 2026-05-12 09:55:06
  * @Description:
  */
 // 类型别名
 type IdType = number | string
 type Status = 'pending' | 'success' | 'error'
 export interface CompDeploymentListType {
-    czPath: string
+    path: string
     groupList: GroupListType[]
 }
 // 接口定义
@@ -160,7 +160,7 @@ export interface HostSoftware {
 }
 
 export interface ComponentDeployment {
-    czPath: string
+    path: string
     groupList: ComponentGroup[]
 }
 
@@ -186,7 +186,7 @@ export interface DBSpec {
 }
 
 export interface DBSpecItem {
-    czPath: string
+    path: string
     specList: DBSpec[]
 }
 
