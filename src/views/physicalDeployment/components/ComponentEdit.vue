@@ -2,11 +2,11 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-05-11 17:33:29
+ * @LastEditTime: 2026-06-03 16:58:32
  * @Description: 
 -->
 <template>
-    <a-modal v-model:open="open" class="env-model" :title="title" :width="1200">
+    <a-modal v-model:open="open" class="env-model" :title="title" :width="1200" style="top: 20px">
         <!-- 1. 组件信息 -->
         <div class="host-modal-section">
             <div class="section-title">组件信息</div>

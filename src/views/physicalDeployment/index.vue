@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-05-12 14:07:21
+ * @LastEditTime: 2026-06-03 15:36:13
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -455,6 +455,35 @@ const handleSave = () => {
     mappingBOList.value = [...mappingAddHost, ...mappingAddDb]
     console.log(mappingIdList.value, 'save-delete')
     console.log(mappingBOList.value, 'save-add')
+
+    setTimeout(() => {
+        //保存后清空mappingIdList和mappingBOList
+        mappingIdList.value = []
+        mappingBOList.value = []
+        // const { compDeploymentList, dbTypeList } = detailsData.value 中新增的主机relationStatus=add的资源，保存后relationStatus=save，用于前端保存
+        compDeploymentList.forEach((item: any) => {
+            item.groupList.forEach((group: any) => {
+                group.resourceList = group.resourceList.map((resource: any) => {
+                    if (resource.relationStatus === 'add') {
+                        resource.relationStatus = 'save'
+                    }
+                    return resource
+                })
+            })
+        })
+        dbTypeList.forEach((item: any) => {
+            item.dbSpecList.forEach((dbSpec: any) => {
+                dbSpec.specList.forEach((spec: any) => {
+                    spec.resourceList = spec.resourceList.map((resource: any) => {
+                        if (resource.relationStatus === 'add') {
+                            resource.relationStatus = 'save'
+                        }
+                        return resource
+                    })
+                })
+            })
+        })
+    }, 500)
 }
 onMounted(() => {
     getDetails()
