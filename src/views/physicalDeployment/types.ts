@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-05-12 09:55:06
+ * @LastEditTime: 2026-06-04 16:09:15
  * @Description:
  */
 // 类型别名
@@ -43,6 +43,9 @@ export interface HostResourceType {
     installedSoftwares: HostSoftType[]
     mappingId: string
     verLogicalDeploymentArchId: string
+
+    osNameAllocated: string
+    osVersionAllocated: string
 }
 export interface HostFileType {
     id: IdType

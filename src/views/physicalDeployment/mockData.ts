@@ -15,7 +15,6 @@ export const getMockDetailsData = () => ({
             path: '全行/Region/AZ/LDC/SR/CZ1',
             groupList: [
                 {
-                    id: 11,
                     groupName: 'NOMAL',
                     componentName: 'APAAS.AUTH.service',
                     componentVersion: '1.2.0',
@@ -57,7 +56,6 @@ export const getMockDetailsData = () => ({
                     ],
                 },
                 {
-                    id: 111,
                     groupName: 'NOMAL1',
                     componentName: 'APAAS.AUTH.service1111',
                     componentVersion: '1.2.0',
@@ -104,7 +102,6 @@ export const getMockDetailsData = () => ({
             path: '全行/Region/AZ/LDC/SR/CZ2222',
             groupList: [
                 {
-                    id: 11333,
                     groupName: 'NOMAL',
                     componentName: 'APAAS.AUTH.service',
                     componentVersion: '1.2.0',
@@ -115,7 +112,7 @@ export const getMockDetailsData = () => ({
                     osVersion: 'v2.0',
                     hostCPU: '4核',
                     hostMemory: '8G',
-                    hostInstanceNum: 2,
+                    hostInstanceNum: 3,
                     hostFileSystemList: [
                         {
                             id: 0,
@@ -146,7 +143,6 @@ export const getMockDetailsData = () => ({
                     ],
                 },
                 {
-                    id: 11122,
                     groupName: 'NOMAL1',
                     componentName: 'APAAS.AUTH.service222',
                     componentVersion: '1.2.0',
@@ -198,7 +194,6 @@ export const getMockDetailsData = () => ({
                     path: '全行/Region/AZ/LDC/SR/CZ9',
                     specList: [
                         {
-                            id: '122',
                             dbVersion: '7.0',
                             osSystem: 'Windows',
                             instanceName: 'instanceName990',
@@ -232,7 +227,6 @@ export const getMockDetailsData = () => ({
                     path: '全行/Region/AZ/LDC/SR/CZ10',
                     specList: [
                         {
-                            id: '1220',
                             dbVersion: '7.0',
                             osSystem: 'Windows',
                             instanceName: 'instanceName',
