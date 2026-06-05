@@ -2,15 +2,15 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-29 15:15:51
+ * @LastEditTime: 2026-06-05 10:51:53
  * @Description: 
 -->
 <template>
-    <div class="content-box mapping-box">
-        <div class="header">
-            <h2>vue3</h2>
-        </div>
+    <div class="content-box">
         <a-tabs v-model:activeKey="activeKey" tab-position="left">
+            <a-tab-pane key="1" tab="vue3基础示例">
+                <VueDemo />
+            </a-tab-pane>
             <a-tab-pane key="defineModel" tab="defineModel()示例">
                 <h4>Parent bound v-model is: {{ model }}</h4>
                 <a-button @click="update">Increment</a-button>
@@ -34,6 +34,7 @@
 import { ref, provide } from 'vue'
 import Child from './Child.vue'
 import MouseComponent from './MouseComponent.vue'
+import VueDemo from './components/VueDemo.vue'
 
 const activeKey = ref('defineModel')
 const model = defineModel<number>({
@@ -47,14 +48,4 @@ const update = () => {
 provide('location', { model, update })
 </script>
 
-<style scoped lang="scss">
-.mapping-box {
-    .header {
-        margin-bottom: 20px;
-    }
-
-    :deep(.ant-tabs-left) {
-        height: calc(100% - 36px - 18px);
-    }
-}
-</style>
+<style scoped lang="scss"></style>

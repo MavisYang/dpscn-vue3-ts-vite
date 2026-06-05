@@ -22,6 +22,21 @@
             }
         },
         {
+            "path": "/ARM/mappingDeployment",
+            "name": "mappingDeployment",
+            "component": "/mappingDeployment/index",
+            "meta": {
+                "icon": "opportunity",
+                "title": "vue3",
+                "isLink": "",
+                "isHide": false,
+                "isFull": false,
+                "isAffix": false,
+                "isKeepAlive": true,
+                "isTab": true
+            }
+        },
+        {
             "path": "/dataSourceManage",
             "name": "dataSourceManage",
             "component": "/dataSourceManage/index",
@@ -88,7 +103,7 @@
             "name": "ARMMessage",
             "component": "/envResources/index",
             "meta": {
-                "icon": "MostlyCloudy",
+                "icon": "grape",
                 "title": "APAAS/ARM/逻辑部署架构设计",
                 "isLink": "",
                 "isHide": false,
@@ -120,21 +135,6 @@
                     "meta": {
                         "icon": "",
                         "title": "物理部署映射",
-                        "isLink": "",
-                        "isHide": false,
-                        "isFull": false,
-                        "isAffix": false,
-                        "isKeepAlive": true,
-                        "isTab": true
-                    }
-                },
-                {
-                    "path": "/ARM/mappingDeployment",
-                    "name": "mappingDeployment",
-                    "component": "/mappingDeployment/index",
-                    "meta": {
-                        "icon": "",
-                        "title": "新的菜单",
                         "isLink": "",
                         "isHide": false,
                         "isFull": false,

@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-05 09:16:11
+ * @LastEditTime: 2026-06-03 15:36:13
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -510,13 +510,6 @@ const handleClear = () => {
     handleTabChange(activeKey.value)
 }
 
-// 模糊匹配
-const fuzzyMatch = (value: any, keyword: string): boolean => {
-    if (!keyword) return true // 空关键词 → 跳过，视为通过
-    if (value === null || value === undefined || value === '') return false
-    // 区分大小写全局模糊匹配
-    return String(value).includes(String(keyword))
-}
 // 全局匹配
 const exactMatch = (value: any, keyword: string): boolean => {
     if (!keyword) return true // 空关键词 → 跳过，视为通过
