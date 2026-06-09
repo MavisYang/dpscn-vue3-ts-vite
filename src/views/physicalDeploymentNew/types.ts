@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 13:46:21
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-04 16:09:15
+ * @LastEditTime: 2026-06-09 10:49:40
  * @Description:
  */
 // 类型别名
@@ -205,6 +205,8 @@ export interface ApiResponse<T> {
 
 export interface DBResourceItem {
     id: string
+    envId: string
+    envName: string
     ip: string
     port: string
     version: string

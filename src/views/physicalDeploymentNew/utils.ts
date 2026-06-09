@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-06-08 09:43:11
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-09 10:12:12
+ * @LastEditTime: 2026-06-09 11:13:17
  * @Description:
  */
 /**
@@ -172,46 +172,59 @@ export const handleSubmitVisible = (
     addList: any,
     activeKey: string,
     detailsData: any,
-): { flag: boolean; msg: string } => {
+): { flag: boolean; message: string[] } => {
     let result: string[] = []
-    console.log('handleSubmitVisible', addList)
     if (activeKey === 'component') {
-        // CZ+GROUP+组件+组件版本
+        // 唯一性规则：同一个CZ下，不同 GROUP+组件+组件版本 不可以选择一样的主机
+        // uniqueVerify 格式：CZ_主机名_IP（不含 GROUP+组件+组件版本）
+        // key 格式：CZ_GROUP_组件_组件版本（用于排除当前group，未修改时可保存）
         const { compDeploymentList } = detailsData
 
+        // 收集当前操作所属的CZ下，除当前group外的其他group已选主机
+        const currentKeys = addList.map((obj: any) => obj.groupKey)
         result = compDeploymentList.flatMap((item: any) => {
-            // 需要过滤掉当前group
-            return item.groupList.flatMap((group: any) => {
-                return group.resourceList
-                    .filter((resource: any) => resource.name || resource.ipAddress) // 1. 先过滤满足条件的资源
-                    .map(
-                        (resource: any) =>
-                            `${item.path}_${group.groupName}_${group.componentName}_${group.componentVersion}_${resource.name}_${resource.ipAddress}`,
-                    ) // 2. 满足条件的生成字符串
-            })
+            return item.groupList
+                .filter((group: any) => {
+                    // 过滤掉当前group：当前group的主机不应与自己冲突，未修改时可保存
+                    const groupKey = `${item.path}_${group.groupName}_${group.componentName}_${group.componentVersion}`
+                    return !currentKeys.includes(groupKey)
+                })
+                .flatMap((group: any) => {
+                    return group.resourceList
+                        .filter((resource: any) => resource.name || resource.ipAddress)
+                        .map((resource: any) => `${item.path}_${resource.name}_${resource.ipAddress}`)
+                })
         })
     } else {
-        // 基建类型（TDSQL）+部署节点(path)+数据库版本+操作系统+实例名称+IP+端口
+        // 唯一性规则：同一个 dbType+path 下，不同 dbVersion+osSystem+instanceName 不能选择一样的 IP+port
+        // uniqueVerify 格式：dbType+path+IP+port（不含 dbVersion+osSystem+instanceName）
+        // key 格式：dbType+path+dbVersion+osSystem+instanceName（用于排除当前spec，未修改时可保存）
         const { dbTypeList } = detailsData
+
+        // 收集当前操作所属的 dbType+path 下，除当前 spec 外的其他 spec 已选资源
+        const currentKeys = addList.map((obj: any) => obj.groupKey)
         result = dbTypeList.flatMap((item: any) => {
             return item.dbSpecList.flatMap((dbSpec: any) => {
-                return dbSpec.specList.flatMap((spec: any) => {
-                    return spec.resourceList
-                        .filter((resource: any) => resource.ip || resource.port) // 1. 先过滤满足条件的资源
-                        .map(
-                            (resource: any) =>
-                                `${item.dbType}_${dbSpec.path}_${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}_${resource.ip}_${resource.port}`, //2. 满足条件的生成字符串
-                        )
-                })
+                return dbSpec.specList
+                    .filter((spec: any) => {
+                        // 过滤掉当前 spec：当前 spec 的资源不应与自己冲突，未修改时可保存
+                        const specKey = `${item.dbType}_${dbSpec.path}_${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}`
+                        return !currentKeys.includes(specKey)
+                    })
+                    .flatMap((spec: any) => {
+                        return spec.resourceList
+                            .filter((resource: any) => resource.ip || resource.port)
+                            .map((resource: any) => `${item.dbType}_${dbSpec.path}_${resource.ip}_${resource.port}`)
+                    })
             })
         })
     }
     const intersection = addList.filter((obj) => result.includes(obj.uniqueVerify))
-    console.log(result, 'result')
-    console.log(intersection, '最终结果')
+    // console.log(result, 'result')
+    // console.log(intersection, '最终结果')
     return {
         flag: intersection.length > 0 ? true : false,
-        msg: intersection.map((item) => item.tip),
+        message: intersection.map((item) => item.tip),
     }
 }
 
@@ -252,6 +265,19 @@ export const getMappingBOList = (detailsData: any) => {
         })
     })
 
-    console.log('mappingAddHost', mappingAddHost, mappingAddDb, [...mappingAddHost, ...mappingAddDb])
     return [...mappingAddHost, ...mappingAddDb]
+}
+
+export const getEmptyTableData = (
+    instanceNum: number,
+    currentResourceLength: any,
+    initResource: any,
+    verLDId: string,
+) => {
+    const emptyTableData = Array.from({ length: instanceNum - currentResourceLength }, () => ({
+        ...initResource,
+        id: Math.random().toString().slice(2),
+        verLogicalDeploymentArchId: verLDId,
+    }))
+    return emptyTableData
 }

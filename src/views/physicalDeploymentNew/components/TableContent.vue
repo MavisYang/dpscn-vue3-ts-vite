@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-08 18:06:53
+ * @LastEditTime: 2026-06-09 10:56:25
  * @Description: 
 -->
 <template>
@@ -235,7 +235,7 @@ const emit = defineEmits(['update:add'])
         right: 0;
         background-color: #fff;
         z-index: 10;
-        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid #e5e6eb;
         gap: 10px;
 
         .action-link {

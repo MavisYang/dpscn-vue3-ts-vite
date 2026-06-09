@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:38:44
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-08 11:14:54
+ * @LastEditTime: 2026-06-09 10:55:39
  * @Description: 
 -->
 <template>
@@ -83,7 +83,7 @@ const props = defineProps(['tableColumns'])
         right: 0; /* 紧贴右侧 */
         background-color: #fff; /* 必须设置背景色，否则会透出后面的文字 */
         z-index: 10; /* 确保在滚动内容之上 */
-        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05); /* 可选：加点阴影增加层次感 */
+        border-bottom: 1px solid #e5e6eb;
     }
 }
 </style>
