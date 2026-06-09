@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:57:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-05-12 08:48:03
+ * @LastEditTime: 2026-06-08 18:06:53
  * @Description: 
 -->
 <template>
@@ -94,21 +94,21 @@
                                         <template v-else-if="columnsChild.key === 'fileSystems'">
                                             <span>{{
                                                 resourceItem?.fileSystems
-                                                    .map((file: any) => `${file.username},${file.mountPoint}`)
+                                                    ?.map((file: any) => `${file.username},${file.mountPoint}`)
                                                     .join('\n')
                                             }}</span>
                                         </template>
                                         <template v-else-if="columnsChild.key === 'installedSoftwares'">
                                             <span>{{
                                                 resourceItem?.installedSoftwares
-                                                    .map((soft: any) => `${soft.softwareName}${soft.version}`)
+                                                    ?.map((soft: any) => `${soft.softwareName}${soft.version}`)
                                                     .join('\n')
                                             }}</span>
                                         </template>
                                         <template v-else-if="columnsChild.key === 'databaseResourceList'">
                                             <span>{{
                                                 resourceItem?.databaseResourceList
-                                                    .map((soft: any) => `${soft.dbName}`)
+                                                    ?.map((soft: any) => `${soft.dbName}`)
                                                     .join('\n')
                                             }}</span>
                                         </template>
@@ -118,55 +118,23 @@
                                         </template>
                                     </div>
                                 </div>
-                                <div class="table-body-cell col-action">
-                                    <template v-if="resourceItem.ipAddress || resourceItem.ip">
-                                        <a
-                                            class="action-link view"
-                                            @click="
-                                                emit('update:view', {
-                                                    type: 'view',
-                                                    tableItem,
-                                                    tableIndex,
-                                                    resourceIndex,
-                                                    resourceId: resourceItem.id,
-                                                })
-                                            "
-                                            >查看</a
-                                        >
-                                        <a
-                                            class="action-link delete"
-                                            @click="
-                                                emit('update:delete', {
-                                                    type: 'delete',
-                                                    tableItem,
-                                                    tableIndex,
-                                                    resourceIndex,
-                                                    resourceId: resourceItem.id,
-                                                })
-                                            "
-                                            >删除</a
-                                        >
-                                    </template>
-                                    <template v-else>
-                                        <a
-                                            class="action-link select"
-                                            @click="
-                                                emit('update:edit', {
-                                                    type: 'edit',
-                                                    tableItem,
-                                                    tableIndex,
-                                                    resourceIndex,
-                                                    resourceId: resourceItem.id,
-                                                })
-                                            "
-                                            >选择{{ pageType === 'component' ? '主机' : '基建服务' }}</a
-                                        >
-                                    </template>
-                                </div>
                             </div>
                         </template>
                         <div v-else class="empty-resource-tip">暂无分配资源</div>
                     </template>
+                </div>
+                <div v-if="columns.key === 'allocated'" class="table-body-cell col-action">
+                    <a
+                        class="action-link select"
+                        @click="
+                            emit('update:add', {
+                                type: 'add',
+                                tableItem,
+                                tableIndex,
+                            })
+                        "
+                        >选择{{ pageType === 'component' ? '主机' : '基建服务' }}</a
+                    >
                 </div>
             </template>
         </div>
@@ -175,7 +143,7 @@
 
 <script setup lang="ts">
 const props = defineProps(['tableItem', 'tableIndex', 'tableColumns', 'pageType'])
-const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
+const emit = defineEmits(['update:add'])
 </script>
 
 <style scoped lang="scss">
@@ -278,12 +246,12 @@ const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
             &.select {
                 color: #1677ff;
             }
-            &.view {
-                color: #1677ff;
-            }
-            &.delete {
-                color: #ff4d4f;
-            }
+            // &.view {
+            //     color: #1677ff;
+            // }
+            // &.delete {
+            //     color: #ff4d4f;
+            // }
         }
     }
 

@@ -14,9 +14,7 @@
                         :dataIndex="index"
                         :dbType="czItem.dbType"
                         :path="value.path"
-                        @update:view="emit('update:view', $event)"
-                        @update:edit="emit('update:edit', $event)"
-                        @update:delete="emit('update:delete', $event)"
+                        @update:add="emit('update:add', $event)"
                     />
                 </a-collapse-panel>
             </a-collapse>
@@ -26,10 +24,10 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import ComponentTable from './ComponentTable'
+import ComponentTable from './ComponentTable.vue'
 
 const props = defineProps(['data'])
-const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
+const emit = defineEmits(['update:add'])
 
 const tableColumns = [
     // 期望规格 表头分组
@@ -102,7 +100,6 @@ const czData = computed(() => props.data)
 watch(
     () => props.data,
     (newVal) => {
-        console.log(newVal, 'newValprops.data')
         if (newVal) {
             const czPaths = newVal.flatMap((item) => item.dbSpecList.map((spec) => spec.path))
             czActiveKey.value = czPaths

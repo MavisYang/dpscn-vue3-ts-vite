@@ -325,7 +325,7 @@ export const getMockDBResources = (): DBResourceItem[] => [
     },
 ]
 
-export const getHostResourceEdit = () => [
+export const getHostList = () => [
     {
         id: '1111111222222',
         envId: '',
@@ -453,7 +453,7 @@ export const getHostResourceEdit = () => [
     },
 ]
 
-export const getDBResourceEdit = () => [
+export const getDBList = () => [
     {
         id: '9',
         envId: '12222',

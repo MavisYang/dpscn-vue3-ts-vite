@@ -5,13 +5,7 @@
  * @LastEditTime: 2026-05-11 17:32:39
  * @Description:
  */
-import {
-    getMockDetailsData,
-    getMockHostResourceItems,
-    getMockDBResources,
-    getHostResourceEdit,
-    getDBResourceEdit,
-} from './mockData'
+import { getMockDetailsData, getMockHostResourceItems, getMockDBResources, getHostList, getDBList } from './mockData'
 import { HostResourceType, DBResourceItem } from './types'
 
 type ApiResponse<T = any> = {
@@ -63,7 +57,7 @@ export const fetchHostResourceEdit = (params: {
     ipAddress: string
     name: string
 }): Promise<ApiResponse<HostResourceType[]>> => {
-    return simulateApiRequest(getHostResourceEdit())
+    return simulateApiRequest(getHostList())
 }
 // 编辑页面获取已有的数据库资源
 export const fetchDBResourcesEdit = (params: {
@@ -73,5 +67,5 @@ export const fetchDBResourcesEdit = (params: {
     port: string
     instanceName: string
 }): Promise<ApiResponse<DBResourceItem[]>> => {
-    return simulateApiRequest(getDBResourceEdit())
+    return simulateApiRequest(getDBList())
 }

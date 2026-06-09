@@ -59,7 +59,7 @@
                         "resourceList": [
                             {
                                 "id": 1111111222222,
-                                "envId": "",
+                                "envId": "host",
                                 "envname": "",
                                 "softAppId": "122",
                                 "softAppCode": "",

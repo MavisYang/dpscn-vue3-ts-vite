@@ -2,15 +2,24 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-05 13:53:46
+ * @LastEditTime: 2026-06-09 10:16:20
  * @Description: ARM物理部署映射
 -->
 <template>
     <div class="content-box mapping-box">
         <div class="header">
+            <a-popconfirm
+                title="Are you sure delete this task?"
+                ok-text="Yes"
+                cancel-text="No"
+                @confirm="handleSave('2')"
+                @cancel="handleCancel"
+            >
+                <a-button type="primary">返回</a-button>
+            </a-popconfirm>
             <span>{{ versionValue }}</span>
             <span>{{ `$ ${detailsData?.softAppCnName} - $${detailsData?.envName}` }}</span>
-            <a-button type="primary" @click="handleSave">保存</a-button>
+            <a-button type="primary" @click="handleSave('1')">保存</a-button>
         </div>
 
         <div class="map-content">
@@ -31,12 +40,10 @@
                             <a-button @click="handleClear">清空</a-button>
                         </a-space>
                     </div>
-                    <ComponentDeploy
+                    <HostDeploy
                         ref="componentDeployRef"
                         :data="viewData?.compDeploymentList ?? []"
-                        @update:view="handleEdit"
-                        @update:edit="handleEdit"
-                        @update:delete="handleDelete"
+                        @update:add="handleAdd"
                     />
                 </a-tab-pane>
                 <a-tab-pane key="infrastructure" tab="基建服务部署">
@@ -53,30 +60,30 @@
                             <a-button @click="handleClear">清空</a-button>
                         </a-space>
                     </div>
-                    <InfrastructureDeploy
+                    <DBDeploy
                         ref="InfrastructureDeployRef"
                         :data="viewData?.dbTypeList ?? []"
-                        @update:view="handleEdit"
-                        @update:edit="handleEdit"
-                        @update:delete="handleDelete"
+                        @update:add="handleAdd"
                     />
                 </a-tab-pane>
             </a-tabs>
         </div>
-        <ComponentEdit ref="ComponentEditRef" @update:list="handleUpdateData" />
-        <InfrastructureEdit ref="InfrastructureEditRef" @update:list="handleUpdateData" />
+        <AddResourceModal ref="addResourceModalRef" @update:list="handleUpdateData" />
     </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, nextTick } from 'vue'
-import ComponentDeploy from './components/ComponentDeploy.vue'
-import InfrastructureDeploy from './components/InfrastructureDeploy.vue'
-import ComponentEdit from './components/ComponentEdit.vue'
-import InfrastructureEdit from './components/InfrastructureEdit.vue'
+import HostDeploy from './components/HostDeploy.vue'
+import DBDeploy from './components/DBDeploy.vue'
+import AddResourceModal from './components/AddResourceModal.vue'
 import { CompDeploymentListType, GroupListType, HostResourceType, DBResourceItem } from './types.js'
 import { message } from 'ant-design-vue'
-import { fetchDetails, fetchHostResourceItems, fetchDBResources } from './mockApi.js'
+import { fetchDetails, fetchHostResourceItems, fetchDBResources, fetchCreateMapping } from './mockApi.js'
+import { getAllResourceIds, filterData, handleSubmitVisible, getMappingBOList } from './utils'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 // const enum ActiveKeyEnum {} // 这是常量枚举 带const，不支持动态取值
 enum ActiveKeyEnum {
@@ -223,126 +230,101 @@ const getDBResource = async () => {
     await Promise.allSettled(requests)
 }
 
-const ComponentEditRef = ref<InstanceType<typeof ComponentEdit>>()
-const InfrastructureEditRef = ref<InstanceType<typeof InfrastructureEdit>>()
+const addResourceModalRef = ref<InstanceType<typeof AddResourceModal>>()
 const currentEvent = ref<any>({
     dataIndex: 0,
     tableIndex: 0,
     resourceIndex: 0,
 })
-// 操作：查看/选择主机
-const handleEdit = (event: any) => {
-    console.log(event, 'eventeventeventeventevent')
-    const { type, tableItem, resourceId } = event
-    const currentRecord = {
-        ...tableItem,
-        resourceList: tableItem.resourceList.filter((resource) => resource.id === resourceId),
-    }
+// 操作：查看/选择/删除 配置主机
+const handleAdd = (event: any) => {
+    const { type, tableItem } = event
     currentEvent.value = event
-    const { softAppId, softAppCode } = detailsData.value
-    if (activeKey.value === 'component') {
-        ComponentEditRef.value?.showModel(currentRecord, type, softAppId, softAppCode)
-    } else if (activeKey.value === 'infrastructure') {
-        InfrastructureEditRef.value?.showModel(currentRecord, type, softAppId, softAppCode)
+    // 获取已选所有CZ下的资源ID
+    const resourceIds: string[] = getAllResourceIds(detailsData.value, activeKey.value)
+    const { softAppId, softAppCode, verLogicalDeploymentArchitectureId } = detailsData.value
+    const params = {
+        record: tableItem,
+        mode: type,
+        softAppId,
+        softAppCode,
+        verLogicalDeploymentArchId: verLogicalDeploymentArchitectureId || (route.query.verLDAId as string),
+        resourceIds,
+        activeKey: activeKey.value,
     }
+    addResourceModalRef.value?.showModel(params)
 }
 
-const mappingIdList = ref<string[]>([])
-const mappingBOList = ref<any>([])
-// 删除配置
-const handleDelete = (event: any) => {
-    const { tableItem, resourceId, path } = event
+const mappingIdList = ref<string[]>([]) // 删除的资源mappingId
+const mappingBOList = ref<any>([]) //新增的资源
 
-    if (activeKey.value === 'component') {
-        // 根据index查找当前已分配资源
-        // const resourceArr = detailsData.value.compDeploymentList[dataIndex].groupList[tableIndex].resourceList
-        // const currentResource = resourceArr[resourceIndex]
-        // 根据唯一值查找当前已分配资源
-        const compDeploymentList = detailsData.value.compDeploymentList.find((comp) => comp.path === path),
-            groupList = compDeploymentList.groupList.find((group) => group.groupName === tableItem.groupName),
-            resourceArr = groupList.resourceList,
-            resourceIndex = resourceArr.findIndex((resource) => resource.id === resourceId),
-            currentResource = resourceArr[resourceIndex]
-
-        // 存储已有的分配主机的mappingId
-        if (currentResource.relationStatus !== 'add') mappingIdList.value.push(currentResource.mappingId)
-        nextTick(() => {
-            // 删除当前选择的分配主机，赋值初始值
-            resourceArr.splice(resourceIndex, 1, { ...resourceHostInit.value })
-        })
-    } else {
-        // 根据index查找当前已分配资源
-        // const resourceArr = detailsData.value.dbTypeList.find((v: any) => v.dbType === event.dbType)?.dbSpecList[
-        //     dataIndex
-        // ].specList[tableIndex].resourceList
-        // const currentResource = resourceArr[resourceIndex]
-        // 根据唯一值查找当前已分配资源
-        const dbSpecList =
-            detailsData.value.dbTypeList
-                .find((v: any) => v.dbType === event.dbType)
-                ?.dbSpecList?.find((dbSpec) => dbSpec.path === path) ?? []
-        const specList =
-            dbSpecList.specList.find(
-                (spec) =>
-                    `${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}` ===
-                    `${tableItem.dbVersion}_${tableItem.osSystem}_${tableItem.instanceName}`,
-            ) ?? []
-        const resourceArr = specList.resourceList ?? []
-        const resourceIndex = resourceArr.findIndex((resource) => resource.id === resourceId)
-        const currentResource = resourceArr[resourceIndex]
-        // 存储已有的分配基建服务的mappingId
-        if (currentResource.relationStatus !== 'add') mappingIdList.value.push(currentResource.mappingId)
-        nextTick(() => {
-            // 删除当前选择的分配基建服务，赋值初始值
-            resourceArr.splice(resourceIndex, 1, { ...resourceDBInit.value })
-        })
+// 更新删除数据
+const updateDeleteData = (deleteMappingIds: string[]) => {
+    // 更新删除数据
+    if (deleteMappingIds.length > 0) {
+        mappingIdList.value.push(...deleteMappingIds)
+        mappingIdList.value = [...new Set(mappingIdList.value)] // 去重
     }
-    // 删除后立刻重新执行搜索，刷新视图
-    nextTick(() => {
-        handleSearch()
-    })
+    console.log('mappingIdList.value', mappingIdList.value)
 }
-// 编辑配置更新数据
-const handleUpdateData = (newItem: any) => {
-    const { resourceId, path, dbType } = currentEvent.value
+// 更新数据（包括新增删除）
+const handleUpdateData = (newGroupItem: any, deleteMappingIds: string[]) => {
+    console.log('newGroupItem', newGroupItem)
+    console.log('currentEvent', currentEvent.value)
+    const { path, dbType } = currentEvent.value
     if (activeKey.value === 'component') {
-        // 根据index查找当前已分配资源
-        // const currentCompDeploymentList = detailsData.value.compDeploymentList[dataIndex],
-        //     currentGroupList = currentCompDeploymentList.groupList[tableIndex],
-        //     resourceArr = currentGroupList.resourceList,
-        //     currentResource = newItem.resourceList[0]
+        const { hostInstanceNum, resourceList, verLogicalDeploymentArchId } = newGroupItem
         // 根据唯一值查找当前已分配资源
         const currentCompDeploymentList = detailsData.value.compDeploymentList.find((comp) => comp.path === path),
             currentGroupList = currentCompDeploymentList.groupList.find(
-                (group) => group.groupName === newItem.groupName,
+                (group) =>
+                    `${group.groupName}_${group.componentName}_${group.componentVersion}` ===
+                    `${newGroupItem.groupName}_${newGroupItem.componentName}_${newGroupItem.componentVersion}`,
             ),
-            resourceArr = currentGroupList.resourceList,
-            resourceIndex = resourceArr.findIndex((resource) => resource.id === resourceId),
-            currentResource = newItem.resourceList[0]
+            currentResource = resourceList
 
-        const addStr = {
-            path,
-            // CZ+GROUP+组件+组件版本+主机名+IP
-            uniqueVerify: `${path}_${currentGroupList.groupName}_${currentGroupList.componentName}_${currentGroupList.componentVersion}_${currentResource.name}_${currentResource.ipAddress}`,
-            relationType: 'HOST',
-        }
+        console.log(
+            'currentCompDeploymentList',
+            currentCompDeploymentList,
+            currentGroupList,
+            currentGroupList.componentName,
+        )
+        // 处理新增的资源用户当前组下唯一性校验对比
+        let addList: any[] = []
+        resourceList.forEach((resource: any) => {
+            addList.push({
+                key: `${path}_${currentGroupList.groupName}_${currentGroupList.componentName}_${currentGroupList.componentVersion}`,
+                // CZ+GROUP+组件+组件版本+主机名+IP
+                uniqueVerify: `${path}_${currentGroupList.groupName}_${currentGroupList.componentName}_${currentGroupList.componentVersion}_${resource.name}_${resource.ipAddress}`,
+                relationType: 'HOST',
+                tip: `$${resource.name}:${resource.ipAddress}`,
+            })
+        })
+        console.log('1111111')
+
+        // 全行/Region/AZ/LDC/SR/CZ1_NOMAL_APAAS.AUTH.service_1.2.0_host001_12.22.111
+        // 全行/Region/AZ/LDC/SR/CZ1_NOMAL_APAAS.AUTH.service_1.2.0_host003_12.22.113
         // 唯一性校验
-        if (handleSubmitVisible(addStr)) {
-            message.error(`$${currentResource.name}：$${currentResource.ipAddress}被部署多次，请检查！`)
-        } else {
-            // 使用 splice 替换，既修改了原数组，也是响应式的
-            message.success('新增成功')
-            resourceArr.splice(resourceIndex, 1, { ...currentResource })
-            ComponentEditRef.value?.hideModel()
+        const visibleResult: any = handleSubmitVisible(addList, activeKey.value, detailsData.value)
+        // const visibleResult1: any = handleSubmitVisible(addList, activeKey.value, viewData.value)
+        console.log('2222222')
+
+        if (visibleResult.flag) {
+            message.error(visibleResult.msg.join('、') + '，被部署多次,请检查！')
+            return
         }
+        message.success('新增成功')
+        // 处理空数组
+        const emptyTableData = Array.from({ length: hostInstanceNum - currentResource.length }, () => ({
+            ...resourceHostInit.value,
+            id: Math.random().toString().slice(2),
+            verLogicalDeploymentArchId,
+        }))
+        currentGroupList.resourceList = [...currentResource, ...emptyTableData] as HostResourceType[]
+        addResourceModalRef.value?.hideModel()
+        updateDeleteData(deleteMappingIds)
     } else {
-        // 根据index查找当前已分配资源
-        // const currentDbSpecList = detailsData.value.dbTypeList.find((v: any) => v.dbType === dbType)?.dbSpecList[
-        //         dataIndex
-        //     ],
-        //     currentSpecList = currentDbSpecList.specList[tableIndex],
-        //     resourceArr = currentSpecList.resourceList,
-        //     currentResource = newItem.resourceList[0]
+        const { instanceNum, resourceList, verLogicalDeploymentArchId } = newGroupItem
         const currentDbSpecList = detailsData.value.dbTypeList
                 .find((v: any) => v.dbType === dbType)
                 ?.dbSpecList.find((dbSpec) => dbSpec.path === path),
@@ -350,120 +332,106 @@ const handleUpdateData = (newItem: any) => {
                 currentDbSpecList.specList.find(
                     (spec) =>
                         `${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}` ===
-                        `${newItem.dbVersion}_${newItem.osSystem}_${newItem.instanceName}`,
+                        `${newGroupItem.dbVersion}_${newGroupItem.osSystem}_${newGroupItem.instanceName}`,
                 ) ?? [],
-            resourceArr = currentSpecList.resourceList,
-            resourceIndex = resourceArr.findIndex((resource) => resource.id === resourceId),
-            currentResource = newItem.resourceList[0]
-        // 根据唯一值查找当前已分配资源
-        const addStr = {
-            dbType,
-            path,
-            // 基建类型（TDSQL）+部署节点(path)+数据库版本+操作系统+实例名称+IP+port
-            uniqueVerify: `${dbType}_${path}_${currentSpecList.dbVersion}_${currentSpecList.osSystem}_${currentSpecList.instanceName}_${currentResource.ip}_${currentResource.port}`,
-            relationType: 'DB',
-        }
+            currentResource = newGroupItem.resourceList
+
+        let addList: any[] = []
+        resourceList.forEach((resource: any) => {
+            addList.push({
+                // 基建类型（TDSQL）+部署节点(path)+数据库版本+操作系统+实例名称+IP+port
+                uniqueVerify: `${dbType}_${path}_${currentSpecList.dbVersion}_${currentSpecList.osSystem}_${currentSpecList.instanceName}_${currentResource.ip}_${currentResource.port}`,
+                relationType: 'DB',
+                tip: `$${resource.ip}:${resource.port}`,
+            })
+        })
 
         // 唯一性校验
-        if (handleSubmitVisible(addStr)) {
-            message.error(`$${currentResource.ip}：$${currentResource.port}被部署多次，请检查！`)
-        } else {
-            // 使用 splice 替换，既修改了原数组，也是响应式的
-            message.success('新增成功')
-            resourceArr.splice(resourceIndex, 1, { ...currentResource })
-            InfrastructureEditRef.value?.hideModel()
+        const visibleResult: any = handleSubmitVisible(addList, activeKey.value, detailsData.value)
+        if (visibleResult.flag) {
+            message.error(visibleResult.msg.join('、') + '，被部署多次,请检查！')
+            return
         }
+        message.success('新增成功')
+        // 处理空数组
+        const emptyTableData = Array.from({ length: instanceNum - currentResource.length }, () => ({
+            ...resourceDBInit.value,
+            id: Math.random().toString().slice(2),
+            verLogicalDeploymentArchId,
+        }))
+        currentSpecList.resourceList = [...currentResource, ...emptyTableData] as DBResourceItem[]
+        addResourceModalRef.value?.hideModel()
+        updateDeleteData(deleteMappingIds)
     }
     // 新增后立刻重新执行搜索，刷新视图
     nextTick(() => {
         handleSearch()
     })
 }
-//点击确定按钮，校验
-const handleSubmitVisible = (addStr: any): boolean => {
-    let result = []
-    if (activeKey.value === 'component') {
-        // CZ+GROUP+组件+组件版本
-        const { compDeploymentList } = detailsData.value
-        result = compDeploymentList.flatMap((item: any) => {
-            return item.groupList.flatMap((group: any) => {
-                return group.resourceList
-                    .filter((resource: any) => resource.name || resource.ipAddress) // 1. 先过滤满足条件的资源
-                    .map(
-                        (resource: any) =>
-                            `${item.path}_${group.groupName}_${group.componentName}_${group.componentVersion}_${resource.name}_${resource.ipAddress}`,
-                    ) // 2. 满足条件的生成字符串
-            })
-        })
-    } else {
-        // 基建类型（TDSQL）+部署节点(path)+数据库版本+操作系统+实例名称+IP+端口
-        const { dbTypeList } = detailsData.value
-        result = dbTypeList.flatMap((item: any) => {
-            return item.dbSpecList.flatMap((dbSpec: any) => {
-                return dbSpec.specList.flatMap((spec: any) => {
-                    return spec.resourceList
-                        .filter((resource: any) => resource.ip || resource.port) // 1. 先过滤满足条件的资源
-                        .map(
-                            (resource: any) =>
-                                `${item.dbType}_${dbSpec.path}_${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}_${resource.ip}_${resource.port}`, //2. 满足条件的生成字符串
-                        )
-                })
-            })
-        })
-    }
-    const str = `${addStr.uniqueVerify}`
-    const flag = result.some((v) => v === str)
-    // console.log(flag, str, result, '最终结果')
-    return flag
-}
-const handleSave = () => {
+const saveLoading = ref(false)
+const handleSave = async (type: string = '1') => {
     const { compDeploymentList, dbTypeList } = detailsData.value
-
-    const mappingAddHost = compDeploymentList.flatMap((item: any) => {
-        return item.groupList.flatMap((group: any) => {
-            return group.resourceList
-                .filter((resource: any) => resource.relationStatus === 'add')
-                .map((resource: any) => {
-                    return {
-                        verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
-                        path: item.path,
-                        otherParam: `${group.groupName}_${group.componentName}_${group.componentVersion}`,
-                        relationId: resource.id,
-                        relationType: resource.relationType,
-                    }
-                })
-        })
-    })
-
-    const mappingAddDb = dbTypeList.flatMap((item: any) => {
-        return item.dbSpecList.flatMap((dbSpec: any) => {
-            return dbSpec.specList.flatMap((spec: any) => {
-                return spec.resourceList
-                    .filter((resource: any) => resource.relationStatus === 'add')
-                    .map((resource: any) => {
-                        return {
-                            verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
-                            path: dbSpec.path,
-                            otherParam: `${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}`,
-                            relationId: resource.id,
-                            relationType: resource.relationType,
-                        }
-                    })
-            })
-        })
-    })
-    mappingBOList.value = [...mappingAddHost, ...mappingAddDb]
+    if (!dbTypeList?.length && !compDeploymentList?.length) {
+        message.warning('暂无可保存数据')
+        return
+    }
+    mappingBOList.value = getMappingBOList(detailsData.value)
     console.log(mappingIdList.value, 'save-delete')
     console.log(mappingBOList.value, 'save-add')
 
-    setTimeout(() => {
-        //保存后清空mappingIdList和mappingBOList
-        mappingIdList.value = []
-        mappingBOList.value = []
-        // const { compDeploymentList, dbTypeList } = detailsData.value 中新增的主机relationStatus=add的资源，保存后relationStatus=save，用于前端保存
-        compDeploymentList.forEach((item: any) => {
-            item.groupList.forEach((group: any) => {
-                group.resourceList = group.resourceList.map((resource: any) => {
+    if (mappingIdList.value.length === 0 && mappingBOList.value.length === 0) {
+        message.warning('暂无可保存数据')
+        return
+    }
+    saveLoading.value = true
+    try {
+        const res = await fetchCreateMapping({
+            mappingIdList: mappingIdList.value,
+            mappingBOList: mappingBOList.value,
+        })
+        if (res.code === '000000') {
+            message.success('保存成功')
+            setTimeout(() => {
+                if (type === '1') {
+                    updateDetails()
+                } else {
+                    handleCancel()
+                }
+            }, 500)
+        }
+    } catch (err) {
+        console.error(err)
+    } finally {
+        saveLoading.value = false
+    }
+}
+
+const handleCancel = () => {
+    console.log('cancel')
+}
+onMounted(() => {
+    getDetails()
+})
+const updateDetails = () => {
+    //保存后清空mappingIdList和mappingBOList
+    mappingIdList.value = []
+    mappingBOList.value = []
+    const { compDeploymentList, dbTypeList } = detailsData.value
+
+    compDeploymentList.forEach((item: any) => {
+        item.groupList.forEach((group: any) => {
+            group.resourceList = group.resourceList.map((resource: any) => {
+                if (resource.relationStatus === 'add') {
+                    resource.relationStatus = 'save'
+                }
+                return resource
+            })
+        })
+    })
+    dbTypeList.forEach((item: any) => {
+        item.dbSpecList.forEach((dbSpec: any) => {
+            dbSpec.specList.forEach((spec: any) => {
+                spec.resourceList = spec.resourceList.map((resource: any) => {
                     if (resource.relationStatus === 'add') {
                         resource.relationStatus = 'save'
                     }
@@ -471,23 +439,8 @@ const handleSave = () => {
                 })
             })
         })
-        dbTypeList.forEach((item: any) => {
-            item.dbSpecList.forEach((dbSpec: any) => {
-                dbSpec.specList.forEach((spec: any) => {
-                    spec.resourceList = spec.resourceList.map((resource: any) => {
-                        if (resource.relationStatus === 'add') {
-                            resource.relationStatus = 'save'
-                        }
-                        return resource
-                    })
-                })
-            })
-        })
-    }, 500)
+    })
 }
-onMounted(() => {
-    getDetails()
-})
 
 const handleTabChange = (key: string) => {
     if (key === 'component') {
@@ -501,130 +454,13 @@ const handleTabChange = (key: string) => {
 
 const handleSearch = () => {
     const form = searchForm.value[activeKey.value]
-    const result = filterData(form)
+    const result = filterData(form, detailsData.value, activeKey.value)
     viewData.value = result
     console.log('✅ 查询结果：', viewData.value)
 }
 
 const handleClear = () => {
     handleTabChange(activeKey.value)
-}
-
-// 全局匹配
-const exactMatch = (value: any, keyword: string): boolean => {
-    if (!keyword) return true // 空关键词 → 跳过，视为通过
-    if (value === null || value === undefined || value === '') return false
-    // 区分大小写全局匹配
-    return String(value) === String(keyword)
-}
-//数据筛选
-const filterData = (form: any) => {
-    const data = detailsData.value
-    if (activeKey.value === 'component') {
-        // 主机的筛选逻辑
-        const { componentName, ipAddress, name } = form
-        if (!componentName && !ipAddress && !name) return data
-
-        const filteredCompList = data.compDeploymentList
-            .map((comp) => {
-                // 过滤 groupList
-                const filteredGroupList = comp.groupList
-                    .filter((group) => {
-                        // 父级条件：componentName（没输入则跳过，视为通过）
-                        const componentNameMatch = !componentName || exactMatch(group.componentName, componentName)
-                        if (!componentNameMatch) return false
-
-                        // 子级条件：如果没有子级条件输入，父级匹配即可保留
-                        if (!ipAddress && !name) return true
-
-                        // 子级条件：resourceList 中必须有至少一个匹配项
-                        const hasChildMatch = (group.resourceList || []).some((resource) => {
-                            const ipMatch = !ipAddress || exactMatch(resource.ipAddress, ipAddress)
-                            const nameMatch = !name || exactMatch(resource.name, name)
-                            return ipMatch && nameMatch
-                        })
-                        if (!hasChildMatch) return false
-
-                        return true
-                    })
-                    .map((group) => {
-                        // 如果没有子级条件，resourceList 保持原样
-                        if (!ipAddress && !name) return group
-
-                        // 有子级条件，过滤 resourceList
-                        const filteredResourceList = (group.resourceList || []).filter((resource) => {
-                            const ipMatch = !ipAddress || exactMatch(resource.ipAddress, ipAddress)
-                            const nameMatch = !name || exactMatch(resource.name, name)
-                            return ipMatch && nameMatch
-                        })
-                        return { ...group, resourceList: filteredResourceList }
-                    })
-
-                if (filteredGroupList.length > 0) {
-                    return { ...comp, groupList: filteredGroupList }
-                }
-                return null
-            })
-            .filter(Boolean)
-
-        return { ...data, compDeploymentList: filteredCompList }
-    } else {
-        // infrastructure 的筛选逻辑
-        const { instanceName, ip, port } = form
-        if (!instanceName && !ip && !port) return data
-
-        const filteredDbTypeList = data.dbTypeList
-            .map((dbType) => {
-                const filteredDbSpecList = dbType.dbSpecList
-                    .map((dbSpec) => {
-                        // 第1步：filter 判断 spec 是否保留（父级 AND 子级）
-                        const filteredSpecList = dbSpec.specList
-                            .filter((spec) => {
-                                // 父级条件：instanceName
-                                const instanceNameMatch = !instanceName || exactMatch(spec.instanceName, instanceName)
-                                if (!instanceNameMatch) return false
-
-                                // 没有子级条件，父级匹配即可
-                                if (!ip && !port) return true
-
-                                // 子级条件：resourceList 中必须有至少一个匹配项
-                                const hasChildMatch = (spec.resourceList || []).some((resource) => {
-                                    const ipMatch = !ip || exactMatch(resource.ip, ip)
-                                    const portMatch = !port || exactMatch(resource.port, port)
-                                    return ipMatch && portMatch
-                                })
-                                if (!hasChildMatch) return false
-
-                                return true
-                            })
-                            // 第2步：map 过滤 resourceList
-                            .map((spec) => {
-                                if (!ip && !port) return spec
-
-                                const filteredResourceList = (spec.resourceList || []).filter((resource) => {
-                                    const ipMatch = !ip || exactMatch(resource.ip, ip)
-                                    const portMatch = !port || exactMatch(resource.port, port)
-                                    return ipMatch && portMatch
-                                })
-                                return { ...spec, resourceList: filteredResourceList }
-                            })
-
-                        if (filteredSpecList.length > 0) {
-                            return { ...dbSpec, specList: filteredSpecList }
-                        }
-                        return null
-                    })
-                    .filter(Boolean)
-
-                if (filteredDbSpecList.length > 0) {
-                    return { ...dbType, dbSpecList: filteredDbSpecList }
-                }
-                return null
-            })
-            .filter(Boolean)
-
-        return { ...data, dbTypeList: filteredDbTypeList }
-    }
 }
 </script>
 

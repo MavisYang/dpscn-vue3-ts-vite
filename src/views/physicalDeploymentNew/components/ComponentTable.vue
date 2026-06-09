@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 15:25:37
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-05-12 09:52:34
+ * @LastEditTime: 2026-06-08 17:52:37
  * @Description: 
 -->
 <template>
@@ -14,37 +14,31 @@
                 :tableItem="item"
                 :tableIndex="index"
                 :tableColumns="tableColumns"
-                @update:view="handleEvent"
-                @update:edit="handleEvent"
-                @update:delete="handleEvent"
+                @update:add="handleEvent"
             />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import TableHeader from './TableHeader'
-import TableContent from './TableContent'
+import TableHeader from './TableHeader.vue'
+import TableContent from './TableContent.vue'
 
 const props = defineProps(['dataSource', 'tableColumns', 'dataIndex', 'pageType', 'path', 'dbType'])
-const emit = defineEmits(['update:view', 'update:edit', 'update:delete'])
+const emit = defineEmits(['update:add'])
 
-const handleEvent = ({ type, tableItem, tableIndex, resourceIndex, resourceId }) => {
+const handleEvent = ({ type, tableItem, tableIndex }) => {
     const params = {
         type,
         tableItem,
         tableIndex,
-        resourceIndex,
-        resourceId,
         dataIndex: props.dataIndex,
         pageType: props.pageType,
         path: props.path,
         dbType: props.dbType, // 基建部署会有该字段
     }
     const eventMap = {
-        view: 'update:view',
-        edit: 'update:edit',
-        delete: 'update:delete',
+        add: 'update:add',
     }
     emit(eventMap[type], params)
 }

@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-07 17:38:44
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-04-22 14:42:48
+ * @LastEditTime: 2026-06-08 11:14:54
  * @Description: 
 -->
 <template>
@@ -22,9 +22,9 @@
                         >
                             {{ items.title }}
                         </div>
-                        <div v-if="item.action" class="table-header-cell action-cell">操作</div>
                     </div>
                 </div>
+                <div v-if="item.action" class="table-header-cell action-cell">操作</div>
             </template>
         </div>
     </div>
