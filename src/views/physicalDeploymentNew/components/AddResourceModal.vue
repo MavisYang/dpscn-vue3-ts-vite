@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-10 15:30:31
+ * @LastEditTime: 2026-06-10 18:34:51
  * @Description: 
 -->
 <template>
@@ -19,7 +19,8 @@
                 :active-type="activeType"
                 :active-data="currentItem"
                 :data-source="dataSource"
-                :selectedRowKeys="selectedRowKeys"
+                :select-params="selectParams"
+                :selected-row-keys="selectedRowKeys"
                 v-model:expandedRowKeys="expandedRowKeys"
                 @onSelectRowChange="onSelectRowChange"
                 @onToggleExpand="toggleExpand"
@@ -50,10 +51,11 @@ const emit = defineEmits(['update:list'])
 
 const open = ref(false)
 const currentItem = reactive<any>({}) // 当前选中的数据，视图数据
-const originalData = reactive<any>([]) // 原始数据，用于判断数据是否修改，获取
+const originalItem = reactive<any>([]) // 原始数据，用于判断数据是否修改，获取
 const activeType = ref('') // 当前激活的tab
 const selectParams = ref<any>({}) //查询参数
 const envResourceIds = ref<string[]>([]) // 全部的环境资源id
+const originalSource = ref<any[]>([]) //暂存全部的列表数据
 const dataSource = ref<any[]>([]) //渲染的列表数据
 interface ModelProps {
     record: any
@@ -68,7 +70,7 @@ const showModel = (props: ModelProps) => {
     activeType.value = activeKey
     envResourceIds.value = resourceIds
     Object.assign(currentItem, { ...JSON.parse(JSON.stringify(record)) }) // 深拷贝，防止修改时影响原数据
-    Object.assign(originalData, { ...JSON.parse(JSON.stringify(record)) }) // 深拷贝，防止修改时影响原数据
+    Object.assign(originalItem, { ...JSON.parse(JSON.stringify(record)) }) // 深拷贝，防止修改时影响原数据
     let selectedKeys = []
     if (activeKey === 'component') {
         selectParams.value = {
@@ -91,7 +93,7 @@ const showModel = (props: ModelProps) => {
         selectedKeys = currentItem.resourceList.filter((r) => r.ip && r.port).map((v) => v.id)
     }
     handleSearch({})
-    onSelectRowChange(selectedKeys, currentItem.resourceList)
+    onSelectRowChange(selectedKeys)
     open.value = true
 }
 
@@ -105,28 +107,29 @@ const hideModel = () => {
 }
 
 const handleSearch = debounce((selectData: any) => {
-    selectParams.value = { ...selectParams.value, ...selectData }
-    getList()
+    getList(selectData)
 }, 300)
 // 获取主机资源或者数据库资源
-const getList = async () => {
+const getList = async (selectData: {}) => {
+    selectParams.value = { ...selectParams.value, ...selectData }
     const fn = activeType.value === 'component' ? fetchHostResourceEdit : fetchDBResourcesEdit
     const res = await fn(selectParams.value)
     const { code, data } = res
     if (code === '0000000') {
         dataSource.value = dataSourceSort(data, envResourceIds.value)
+        if (Object.keys(selectData).length === 0) {
+            originalSource.value = data
+        }
     }
 }
 
 // 选中行
 const selectedRowKeys = ref<string[]>([])
-const selectedRows = ref<any[]>([])
 // 展开的行
 const expandedRowKeys = ref<string[]>([])
 // 选择行
-const onSelectRowChange = (keys: string[], rows: any[]) => {
+const onSelectRowChange = (keys: string[]) => {
     selectedRowKeys.value = keys
-    selectedRows.value = rows
 }
 // 展开/收起
 const toggleExpand = (record: any) => {
@@ -164,7 +167,8 @@ const handleConfirm = () => {
     }
     // 把选中的主机回填到resource
     setTimeout(() => {
-        currentItem.resourceList = selectedRows.value.map((v) => ({
+        const selectedRows = originalSource.value.filter((v) => selectedRowKeys.value.includes(v.id))
+        currentItem.resourceList = selectedRows.map((v) => ({
             ...v,
             relationType: activeDeploy.relationType,
         }))

@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-06-05 15:54:28
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-10 08:58:19
+ * @LastEditTime: 2026-06-10 18:34:49
  * @Description: 
 -->
 <template>
@@ -85,6 +85,7 @@
                         // hideSelectAll: true,
                         selectedRowKeys: selectedRowKeys,
                         onChange: handleSelectRowChange,
+                        preserveSelectedRowKeys: true, //当数据被删除时仍然保留选项的 key
                     }"
                 >
                     <template #bodyCell="{ column, record }">
@@ -222,6 +223,7 @@
                     :row-selection="{
                         selectedRowKeys: selectedRowKeys,
                         onChange: handleSelectRowChange,
+                        preserveSelectedRowKeys: true, //当数据被删除时仍然保留选项的 key
                     }"
                 >
                     <template #bodyCell="{ column, record }">
@@ -310,7 +312,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
 import { UpOutlined, DownOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
 const props = defineProps({
@@ -341,21 +343,12 @@ const props = defineProps({
 })
 const emit = defineEmits(['onSearch', 'onSelectRowChange', 'onToggleExpand', 'update:expandedRowKeys'])
 
-const selectData = ref({ ...props.selectParams })
-// 监听父组件props变化，同步更新本地
-watch(
-    () => props.selectParams,
-    (newVal) => {
-        selectData.value = { ...newVal }
-    },
-    { deep: true },
-)
+const selectData = computed(() => props.selectParams)
 const handleSearch = () => {
     emit('onSearch', selectData.value)
 }
-
-const handleSelectRowChange = (selectedRowKeys: (string | number)[], selectedRows: any[]) => {
-    emit('onSelectRowChange', selectedRowKeys, selectedRows)
+const handleSelectRowChange = (keys: (string | number)[]) => {
+    emit('onSelectRowChange', keys)
 }
 const handleToggleExpand = (record: any) => {
     emit('onToggleExpand', record)

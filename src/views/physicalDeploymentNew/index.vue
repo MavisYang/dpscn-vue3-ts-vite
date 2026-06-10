@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-10 16:10:29
+ * @LastEditTime: 2026-06-10 16:19:04
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -114,10 +114,8 @@ const searchForm = ref({
 
 const versionValue = ref('v0.4.16.0001-tmp-20251120-01')
 const activeKey = ref('component')
-const originalData: Ref<any> = ref({}) // 原始基准数据（仅用于对比，大保存后更新）
 const detailsData: Ref<any> = ref({}) // 真实数据源：新增、删除、编辑，只改它
-const viewData = ref<any>({}) // 页面渲染用：查询过滤后的视图数据
-const tempSelection = ref<any>({})
+const viewData: Ref<any> = ref({}) // 页面渲染用：查询过滤后的视图数据
 
 const originalHostResource = ref(new Map<string, any>()) // 原始主机资源数据
 const originalDBResource = ref(new Map<string, any>()) // 原始数据库资源数据
@@ -158,7 +156,6 @@ const getDetails = async () => {
             await Promise.allSettled([getHostResourceItem(), getDBResource()])
             // 所有子接口执行完，真实数据源已经合并完成，再给视图赋值
             viewData.value = { ...detailsData.value }
-            // originalData.value = [...detailsData.value]
         }
     } catch (error) {
         console.error('获取详情失败:', error)
