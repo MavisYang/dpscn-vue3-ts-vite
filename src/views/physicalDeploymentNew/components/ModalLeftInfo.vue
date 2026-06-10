@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-06-05 15:36:38
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-05 15:59:53
+ * @LastEditTime: 2026-06-10 08:54:16
  * @Description: 
 -->
 <template>
@@ -16,13 +16,13 @@
                     </div>
                     <div class="info-col">
                         <div class="label">组件版本</div>
-                        <div class="value">{{ activeData.compSpecCPU }},{{ activeData.compSpecMemory }}</div>
+                        <div class="value">{{ activeData.componentVersion || '-' }}</div>
                     </div>
                 </div>
                 <div class="info-row">
                     <div class="info-col">
                         <div class="label">组件规格</div>
-                        <div class="value">{{ activeData.compSpec || '-' }}</div>
+                        <div class="value">{{ activeData.compSpecCPU }},{{ activeData.compSpecMemory }}</div>
                     </div>
                     <div class="info-col">
                         <div class="label">实例数量</div>
@@ -44,11 +44,11 @@
                 <div class="info-row">
                     <div class="info-col">
                         <div class="label">操作系统</div>
-                        <div class="value">{{ activeData.osName || '-' }}</div>
+                        <div class="value">{{ activeData.hostOSName || '-' }}</div>
                     </div>
                     <div class="info-col">
                         <div class="label">操作系统版本</div>
-                        <div class="value">{{ activeData.osVersion || '-' }}</div>
+                        <div class="value">{{ activeData.hostOSVersion || '-' }}</div>
                     </div>
                 </div>
             </TitleSlot>

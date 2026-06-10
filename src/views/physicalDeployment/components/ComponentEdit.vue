@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-03 16:58:32
+ * @LastEditTime: 2026-06-09 17:02:15
  * @Description: 
 -->
 <template>
@@ -40,8 +40,8 @@
                 :columns="[
                     { title: 'CPU', key: 'hostCPU', dataIndex: 'hostCPU', width: 200 },
                     { title: '内存', key: 'hostMemory', dataIndex: 'hostMemory', width: 200 },
-                    { title: '操作系统', dataIndex: 'osName', width: 200 },
-                    { title: '操作系统版本', dataIndex: 'osVersion', width: 200 },
+                    { title: '操作系统', dataIndex: 'hostOSName', width: 200 },
+                    { title: '操作系统版本', dataIndex: 'hostOSVersion', width: 200 },
                 ]"
                 :scroll="{ x: 'max-content' }"
                 size="small"

@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-06-05 15:54:28
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-08 13:57:52
+ * @LastEditTime: 2026-06-10 08:58:19
  * @Description: 
 -->
 <template>
@@ -97,14 +97,16 @@
                         </template>
                         <template v-else-if="column.dataIndex === 'fileSystems'">
                             {{
-                                record.fileSystems?.map((file: any) => `${file.username},${file.mountPoint}`).join('\n')
+                                record.fileSystems
+                                    ?.map((file: any) => `${file.username},${file.mountPoint}`)
+                                    .join('\n') ?? '-'
                             }}
                         </template>
                         <template v-else-if="column.dataIndex === 'installedSoftwares'">
                             {{
                                 record.installedSoftwares
                                     .map((soft: any) => `${soft.softwareName}${soft.version}`)
-                                    .join('\n')
+                                    .join('\n') ?? '-'
                             }}
                         </template>
                         <template v-else-if="column.dataIndex === 'action'">
@@ -210,8 +212,7 @@
                             title: '操作',
                             dataIndex: 'action',
                             key: 'action',
-                            width: 120,
-                            slots: { customRender: 'action' },
+                            width: 110,
                         },
                     ]"
                     :scroll="{ x: 800, y: 460 }"
@@ -234,12 +235,14 @@
                         <template v-else-if="column.dataIndex === 'databaseResourceList'">
                             {{ record.databaseResourceList?.map((item) => item.dbName).join(',') }}
                         </template>
-                    </template>
-                    <template #action="{ record }">
-                        <a @click="handleToggleExpand(record)">
-                            <template v-if="expandedRowKeys.includes(record.id)"> <UpOutlined /> 收起详情 </template>
-                            <template v-else> <DownOutlined /> 展开详情 </template>
-                        </a>
+                        <template v-else-if="column.dataIndex === 'action'">
+                            <a @click="handleToggleExpand(record)">
+                                <template v-if="expandedRowKeys.includes(record.id)">
+                                    <UpOutlined /> 收起详情
+                                </template>
+                                <template v-else> <DownOutlined /> 展开详情 </template>
+                            </a>
+                        </template>
                     </template>
                     <template #expandedRowRender="{ record }">
                         <div class="host-expand">
@@ -255,8 +258,8 @@
                                             <span class="label">数据库版本：</span>{{ record.version }}
                                         </div>
                                         <div class="list-item">
-                                            <span class="label">操作系统：</span>{{ record.osName
-                                            }}{{ record.osVersion }}
+                                            <span class="label">操作系统：</span>{{ record.hostOSName
+                                            }}{{ record.hostOSVersion }}
                                         </div>
                                         <div class="list-item">
                                             <span class="label">实例名称：</span>{{ record.instanceName }}
@@ -295,8 +298,8 @@
                             </div>
                         </div>
                     </template>
-                </a-table></template
-            >
+                </a-table>
+            </template>
         </div>
 
         <div class="section-footer">

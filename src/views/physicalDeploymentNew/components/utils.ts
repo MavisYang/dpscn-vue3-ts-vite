@@ -2,15 +2,13 @@
  * @Author: yangmiaomiao
  * @Date: 2026-06-08 09:43:11
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-09 11:13:17
+ * @LastEditTime: 2026-06-10 16:09:27
  * @Description:
  */
 /**
  * 获取已选的所有环境资源ID
  * 选择主机是否已关联高亮是全部CZ下的资源ID
  */
-import { message } from 'ant-design-vue'
-
 export const getAllResourceIds = (detailsData: any, activeKey: string) => {
     if (activeKey === 'component') {
         return (
@@ -32,12 +30,11 @@ export const getAllResourceIds = (detailsData: any, activeKey: string) => {
     }
 }
 // 选择主机排序，将已被选中的项置顶，同时保持选中项和未选中项内部的原始相对顺序不变。
-export const dataSourceSort = (data: any, envResourceIds: any, currentSelectedIds: string[]) => {
+export const dataSourceSort = (data: any, envResourceIds: any) => {
     return data
         .map((item, index) => ({
             ...item,
             selectedFlag: envResourceIds.includes(item.id),
-
             _originIndex: index, // 临时记录原始顺序
         }))
         .sort((a: any, b: any) => {
@@ -168,11 +165,12 @@ export const filterData = (form: any, data: any, activeKey: string) => {
 }
 
 //点击确定按钮，校验
-export const handleSubmitVisible = (
-    addList: any,
-    activeKey: string,
-    detailsData: any,
-): { flag: boolean; message: string[] } => {
+export const handleSubmitVisible = (props: {
+    addList: any
+    activeKey: string
+    detailsData: any
+}): { flag: boolean; message: string[] } => {
+    const { addList, activeKey, detailsData } = props
     let result: string[] = []
     if (activeKey === 'component') {
         // 唯一性规则：同一个CZ下，不同 GROUP+组件+组件版本 不可以选择一样的主机
@@ -227,47 +225,47 @@ export const handleSubmitVisible = (
         message: intersection.map((item) => item.tip),
     }
 }
+// 获取新增的资源配置
+// export const getMappingBOList = (detailsData: any) => {
+//     const { compDeploymentList, dbTypeList } = detailsData
 
-export const getMappingBOList = (detailsData: any) => {
-    const { compDeploymentList, dbTypeList } = detailsData
+//     const mappingAddHost = compDeploymentList.flatMap((item: any) => {
+//         return item.groupList.flatMap((group: any) => {
+//             return group.resourceList
+//                 .filter((resource: any) => resource.relationStatus === 'add')
+//                 .map((resource: any) => {
+//                     return {
+//                         verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
+//                         path: item.path,
+//                         otherParam: `${group.groupName}_${group.componentName}_${group.componentVersion}`,
+//                         relationId: resource.id,
+//                         relationType: resource.relationType,
+//                     }
+//                 })
+//         })
+//     })
 
-    const mappingAddHost = compDeploymentList.flatMap((item: any) => {
-        return item.groupList.flatMap((group: any) => {
-            return group.resourceList
-                .filter((resource: any) => resource.relationStatus === 'add')
-                .map((resource: any) => {
-                    return {
-                        verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
-                        path: item.path,
-                        otherParam: `${group.groupName}_${group.componentName}_${group.componentVersion}`,
-                        relationId: resource.id,
-                        relationType: resource.relationType,
-                    }
-                })
-        })
-    })
+//     const mappingAddDb = dbTypeList.flatMap((item: any) => {
+//         return item.dbSpecList.flatMap((dbSpec: any) => {
+//             return dbSpec.specList.flatMap((spec: any) => {
+//                 return spec.resourceList
+//                     .filter((resource: any) => resource.relationStatus === 'add')
+//                     .map((resource: any) => {
+//                         return {
+//                             verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
+//                             path: dbSpec.path,
+//                             otherParam: `${item.dbType}_${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}`,
+//                             relationId: resource.id,
+//                             relationType: resource.relationType,
+//                         }
+//                     })
+//             })
+//         })
+//     })
 
-    const mappingAddDb = dbTypeList.flatMap((item: any) => {
-        return item.dbSpecList.flatMap((dbSpec: any) => {
-            return dbSpec.specList.flatMap((spec: any) => {
-                return spec.resourceList
-                    .filter((resource: any) => resource.relationStatus === 'add')
-                    .map((resource: any) => {
-                        return {
-                            verLogicalDeploymentArchId: resource.verLogicalDeploymentArchId,
-                            path: dbSpec.path,
-                            otherParam: `${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}`,
-                            relationId: resource.id,
-                            relationType: resource.relationType,
-                        }
-                    })
-            })
-        })
-    })
-
-    return [...mappingAddHost, ...mappingAddDb]
-}
-
+//     return [...mappingAddHost, ...mappingAddDb]
+// }
+// 返回空的资源数据，用作视图渲染
 export const getEmptyTableData = (
     instanceNum: number,
     currentResourceLength: any,
@@ -280,4 +278,54 @@ export const getEmptyTableData = (
         verLogicalDeploymentArchId: verLDId,
     }))
     return emptyTableData
+}
+
+export const uniqueHostKey = (group: any) => {
+    return `${group.groupName}_${group.componentName}_${group.componentVersion}`
+}
+export const uniqueDBKey = (group: any, dbType: string) => {
+    return `${dbType}_${group.dbVersion}_${group.osSystem}_${group.instanceName}`
+}
+
+export function diffSameKeyMap(tempMap: Map<string, any[]>, originMap: Map<string, any[]>, relationType: string) {
+    const addItems: any[] = []
+    const delItems: any[] = []
+    const saveAddItems: any[] = []
+    let delMappingIds: string[] = []
+
+    for (const [key, tempList] of tempMap) {
+        const [path, otherParam, verLogicalDeploymentArchId] = key.split('&&&')
+        const originList = originMap.get(key)!
+        const originIds = new Set(originList.map((i) => i.id))
+        const tempIds = new Set(tempList.map((i) => i.id))
+
+        // 新增
+        tempList.forEach((item) => {
+            if (!originIds.has(item.id)) {
+                const saveItem = {
+                    path,
+                    verLogicalDeploymentArchId,
+                    otherParam,
+                    relationType,
+                    relationId: item.id,
+                }
+                saveAddItems.push(saveItem)
+                addItems.push(item)
+            }
+        })
+        // 删除
+        originList.forEach((item) => {
+            if (!tempIds.has(item.id)) {
+                delItems.push(item)
+                if (item.mappingId) delMappingIds.push(item.mappingId)
+            }
+        })
+    }
+
+    return {
+        addItems,
+        delItems,
+        delMappingIds: [...new Set(delMappingIds.filter(Boolean))],
+        saveAddItems,
+    }
 }

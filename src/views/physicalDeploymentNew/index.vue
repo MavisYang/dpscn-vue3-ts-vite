@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-09 11:14:54
+ * @LastEditTime: 2026-06-10 16:10:29
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -18,7 +18,7 @@
                 <a-button type="primary">返回</a-button>
             </a-popconfirm>
             <span>{{ versionValue }}</span>
-            <span>{{ `$ ${detailsData?.softAppCnName} - $${detailsData?.envName}` }}</span>
+            <span>{{ `$ ${viewData?.softAppCnName} - $${viewData?.envName}` }}</span>
             <a-button type="primary" @click="handleSave('1')">保存</a-button>
         </div>
 
@@ -40,7 +40,7 @@
                             <a-button @click="handleClear">清空</a-button>
                         </a-space>
                     </div>
-                    <HostDeploy
+                    <ComponentDeploy
                         ref="componentDeployRef"
                         :data="viewData?.compDeploymentList ?? []"
                         @update:add="handleAdd"
@@ -60,7 +60,7 @@
                             <a-button @click="handleClear">清空</a-button>
                         </a-space>
                     </div>
-                    <DBDeploy
+                    <InfrastructureDeploy
                         ref="InfrastructureDeployRef"
                         :data="viewData?.dbTypeList ?? []"
                         @update:add="handleAdd"
@@ -73,14 +73,22 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, nextTick } from 'vue'
-import HostDeploy from './components/HostDeploy.vue'
-import DBDeploy from './components/DBDeploy.vue'
+import { onMounted, ref, nextTick, Ref } from 'vue'
+import ComponentDeploy from './components/ComponentDeploy.vue'
+import InfrastructureDeploy from './components/InfrastructureDeploy.vue'
 import AddResourceModal from './components/AddResourceModal.vue'
 import { CompDeploymentListType, GroupListType, HostResourceType, DBResourceItem } from './types.js'
 import { message } from 'ant-design-vue'
 import { fetchDetails, fetchHostResourceItems, fetchDBResources, fetchCreateMapping } from './mockApi.js'
-import { getAllResourceIds, filterData, handleSubmitVisible, getMappingBOList, getEmptyTableData } from './utils'
+import {
+    getAllResourceIds,
+    filterData,
+    handleSubmitVisible,
+    getEmptyTableData,
+    diffSameKeyMap,
+    uniqueHostKey,
+    uniqueDBKey,
+} from './components/utils.js'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -106,8 +114,16 @@ const searchForm = ref({
 
 const versionValue = ref('v0.4.16.0001-tmp-20251120-01')
 const activeKey = ref('component')
-const detailsData = ref<any>({}) // 真实数据源：新增、删除、编辑 只改它
+const originalData: Ref<any> = ref({}) // 原始基准数据（仅用于对比，大保存后更新）
+const detailsData: Ref<any> = ref({}) // 真实数据源：新增、删除、编辑，只改它
 const viewData = ref<any>({}) // 页面渲染用：查询过滤后的视图数据
+const tempSelection = ref<any>({})
+
+const originalHostResource = ref(new Map<string, any>()) // 原始主机资源数据
+const originalDBResource = ref(new Map<string, any>()) // 原始数据库资源数据
+const tempHostResource = ref(new Map<string, any>()) // 临时主机资源数据
+const tempDBResource = ref(new Map<string, any>()) // 临时数据库资源数据
+
 const resourceHostInit = ref<Partial<HostResourceType>>({
     name: '',
     ipAddress: '',
@@ -141,7 +157,8 @@ const getDetails = async () => {
             // 并行获取主机资源和数据库资源
             await Promise.allSettled([getHostResourceItem(), getDBResource()])
             // 所有子接口执行完，真实数据源已经合并完成，再给视图赋值
-            viewData.value = JSON.parse(JSON.stringify(detailsData.value))
+            viewData.value = { ...detailsData.value }
+            // originalData.value = [...detailsData.value]
         }
     } catch (error) {
         console.error('获取详情失败:', error)
@@ -156,12 +173,13 @@ const getHostResourceItem = async () => {
 
     // 并行请求所有主机资源
     const requests: Promise<void>[] = []
+    const resourceMap = new Map()
 
     detailsData.value.compDeploymentList.forEach((element: CompDeploymentListType) => {
         const path = element.path
 
         element.groupList.forEach((group: GroupListType) => {
-            const otherParam = `${group.groupName}_${group.componentName}_${group.componentVersion}`
+            const otherParam = uniqueHostKey(group)
 
             requests.push(
                 (async () => {
@@ -173,6 +191,8 @@ const getHostResourceItem = async () => {
 
                     if (response.code === '0000000') {
                         const data = response.data || []
+                        // 暂存资源数据
+                        resourceMap.set(`${path}&&&${otherParam}&&&${verLogicalDeploymentArchId}`, [...data])
                         const emptyTableData = getEmptyTableData(
                             group.hostInstanceNum,
                             data.length,
@@ -187,6 +207,11 @@ const getHostResourceItem = async () => {
     })
 
     await Promise.allSettled(requests)
+    originalHostResource.value = new Map(resourceMap)
+    tempHostResource.value = new Map(resourceMap)
+    // for (const realKey of hostResourceMap.keys()) {
+    //     console.log('真实存储key:', JSON.stringify(realKey))
+    // }
 }
 
 // 获取数据库资源
@@ -197,13 +222,13 @@ const getDBResource = async () => {
 
     // 并行请求所有数据库资源
     const requests: Promise<void>[] = []
+    const resourceMap = new Map()
 
     detailsData.value.dbTypeList.forEach((element) => {
         element.dbSpecList.forEach((spec) => {
             const path = spec.path
             spec.specList.forEach((group) => {
-                const otherParam = `${element.dbType}_${group.dbVersion}_${group.osSystem}_${group.instanceName}`
-
+                const otherParam = uniqueDBKey(group, element.dbType)
                 requests.push(
                     (async () => {
                         const response = await fetchDBResources({
@@ -211,9 +236,10 @@ const getDBResource = async () => {
                             path,
                             otherParam,
                         })
-
                         if (response.code === '0000000') {
                             const data = response.data || []
+                            // 暂存资源数据
+                            resourceMap.set(`${path}&&&${otherParam}&&&${verLogicalDeploymentArchId}`, [...data])
                             const emptyTableData = getEmptyTableData(
                                 group.instanceNum,
                                 data.length,
@@ -230,6 +256,13 @@ const getDBResource = async () => {
 
     //  Promise.allSettled 等待所有 Promise 结束（无论成功或失败），返回每个 Promise 的状态和结果
     await Promise.allSettled(requests)
+    // 赋值传递 Map,必须用 new Map(源Map) 拷贝
+    originalDBResource.value = new Map(resourceMap)
+    tempDBResource.value = new Map(resourceMap)
+    // for (const [realKey, realValue] of tempHostResource.value.entries()) {
+    //     console.log('真实存储key:', JSON.stringify(realKey))
+    //     console.log('真实存储value:', JSON.stringify(realValue))
+    // }
 }
 
 const addResourceModalRef = ref<InstanceType<typeof AddResourceModal>>()
@@ -240,14 +273,13 @@ const currentEvent = ref<any>({
 })
 // 操作：查看/选择/删除 配置主机
 const handleAdd = (event: any) => {
-    const { type, tableItem } = event
+    const { tableItem } = event
     currentEvent.value = event
     // 获取已选所有CZ下的资源ID
     const resourceIds: string[] = getAllResourceIds(detailsData.value, activeKey.value)
     const { softAppId, softAppCode, verLogicalDeploymentArchitectureId } = detailsData.value
     const params = {
         record: tableItem,
-        mode: type,
         softAppId,
         softAppCode,
         verLogicalDeploymentArchId: verLogicalDeploymentArchitectureId || (route.query.verLDAId as string),
@@ -257,35 +289,23 @@ const handleAdd = (event: any) => {
     addResourceModalRef.value?.showModel(params)
 }
 
-const mappingIdList = ref<string[]>([]) // 删除的资源mappingId
-const mappingBOList = ref<any>([]) //新增的资源
-
-// 更新删除数据
-const updateDeleteData = (deleteMappingIds: string[]) => {
-    // 更新删除数据
-    if (deleteMappingIds.length > 0) {
-        mappingIdList.value.push(...deleteMappingIds)
-        mappingIdList.value = [...new Set(mappingIdList.value)] // 去重
-    }
-}
 // 更新数据（包括新增删除）
-const handleUpdateData = (newGroupItem: any, deleteMappingIds: string[]) => {
-    // console.log('newGroupItem', newGroupItem)
-    // console.log('currentEvent', currentEvent.value)
+const handleUpdateData = (newGroupRecord: any) => {
+    console.log('newGroupRecord', newGroupRecord)
     const { path, dbType } = currentEvent.value
+    const verLogicalDeploymentArchId =
+        detailsData.value.verLogicalDeploymentArchitectureId || (route.query.verLDAId as string)
+
     if (activeKey.value === 'component') {
-        const { hostInstanceNum, resourceList, verLogicalDeploymentArchId } = newGroupItem
+        const { hostInstanceNum, resourceList } = newGroupRecord
+        const currentGroupKey = uniqueHostKey(newGroupRecord)
         // 根据唯一值查找当前已分配资源
         const currentCompDeployment = detailsData.value.compDeploymentList.find((comp) => comp.path === path),
-            currentGroup = currentCompDeployment.groupList.find(
-                (group) =>
-                    `${group.groupName}_${group.componentName}_${group.componentVersion}` ===
-                    `${newGroupItem.groupName}_${newGroupItem.componentName}_${newGroupItem.componentVersion}`,
-            ),
+            currentGroup = currentCompDeployment.groupList.find((group) => uniqueHostKey(group) === currentGroupKey),
             currentResource = resourceList
 
         // 处理新增的资源用户当前组下唯一性校验对比
-        let addList: any[] = []
+        const addList: any[] = []
         resourceList.forEach((resource: any) => {
             addList.push({
                 // groupKey用于标识当前group，校验时排除自身，未修改时可保存
@@ -297,12 +317,17 @@ const handleUpdateData = (newGroupItem: any, deleteMappingIds: string[]) => {
             })
         })
         // 唯一性校验
-        const visibleResult: any = handleSubmitVisible(addList, activeKey.value, detailsData.value)
+        const visibleResult: { flag: boolean; message: string[] } = handleSubmitVisible({
+            addList,
+            activeKey: activeKey.value,
+            detailsData: detailsData.value,
+        })
         if (visibleResult.flag) {
             message.error(visibleResult.message.join('、') + '，被部署多次,请检查！')
             return
         }
         message.success('新增成功')
+
         // 处理空数组
         const emptyTableData = getEmptyTableData(
             hostInstanceNum,
@@ -310,22 +335,22 @@ const handleUpdateData = (newGroupItem: any, deleteMappingIds: string[]) => {
             resourceHostInit.value,
             verLogicalDeploymentArchId,
         )
-        // 赋值当前Group下的资源
+        // 更新当前Group下的资源
         currentGroup.resourceList = [...currentResource, ...emptyTableData] as HostResourceType[]
+        // 更新暂存map数据
+        const targetKey = `${path}&&&${currentGroupKey}&&&${verLogicalDeploymentArchId}`
+        tempHostResource.value.set(targetKey, [...currentResource])
     } else {
-        const { instanceNum, resourceList, verLogicalDeploymentArchId } = newGroupItem
+        const { instanceNum, resourceList } = newGroupRecord
+        const currentGroupKey = uniqueDBKey(newGroupRecord, dbType)
+
         const currentDbSpec = detailsData.value.dbTypeList
                 .find((v: any) => v.dbType === dbType)
                 ?.dbSpecList.find((dbSpec) => dbSpec.path === path),
-            currentSpec =
-                currentDbSpec.specList.find(
-                    (spec) =>
-                        `${spec.dbVersion}_${spec.osSystem}_${spec.instanceName}` ===
-                        `${newGroupItem.dbVersion}_${newGroupItem.osSystem}_${newGroupItem.instanceName}`,
-                ) ?? [],
-            currentResource = newGroupItem.resourceList
+            currentSpec = currentDbSpec.specList.find((spec) => uniqueDBKey(spec, dbType) === currentGroupKey) ?? [],
+            currentResource = newGroupRecord.resourceList
 
-        let addList: any[] = []
+        const addList: any[] = []
         resourceList.forEach((resource: any) => {
             addList.push({
                 // groupKey用于标识当前spec，校验时排除自身，未修改时可保存
@@ -338,12 +363,18 @@ const handleUpdateData = (newGroupItem: any, deleteMappingIds: string[]) => {
         })
 
         // 唯一性校验
-        const visibleResult: any = handleSubmitVisible(addList, activeKey.value, detailsData.value)
+        const visibleResult: { flag: boolean; message: string[] } = handleSubmitVisible({
+            addList,
+            activeKey: activeKey.value,
+            detailsData: detailsData.value,
+        })
         if (visibleResult.flag) {
             message.error(visibleResult.message.join('、') + '，被部署多次,请检查！')
             return
         }
+
         message.success('新增成功')
+
         // 处理空数组
         const emptyTableData = getEmptyTableData(
             instanceNum,
@@ -352,24 +383,32 @@ const handleUpdateData = (newGroupItem: any, deleteMappingIds: string[]) => {
             verLogicalDeploymentArchId,
         )
         currentSpec.resourceList = [...currentResource, ...emptyTableData] as DBResourceItem[]
+        // 更新暂存map数据
+        const targetKey = `${path}&&&${currentGroupKey}&&&${verLogicalDeploymentArchId}`
+        tempDBResource.value.set(targetKey, [...currentResource])
     }
     addResourceModalRef.value?.hideModel()
-    updateDeleteData(deleteMappingIds)
     // 新增后立刻重新执行搜索，刷新视图
     nextTick(() => {
         handleSearch()
     })
 }
 const saveLoading = ref(false)
+const mappingIdList = ref<string[]>([]) // 删除的资源mappingId
+const mappingBOList = ref<any>([]) //新增的资源
 const handleSave = async (type: string = '1') => {
     const { compDeploymentList, dbTypeList } = detailsData.value
     if (!dbTypeList?.length && !compDeploymentList?.length) {
         message.warning('暂无可保存数据')
         return
     }
-    mappingBOList.value = getMappingBOList(detailsData.value)
-    console.log(mappingIdList.value, 'save-delete')
-    console.log(mappingBOList.value, 'save-add')
+    // 获取新增删除数据
+    const hostDiff = diffSameKeyMap(tempHostResource.value, originalHostResource.value, 'HOST')
+    const dbDiff = diffSameKeyMap(tempDBResource.value, originalDBResource.value, 'DB')
+    mappingIdList.value = [...hostDiff.delMappingIds, ...dbDiff.delMappingIds]
+    mappingBOList.value = [...hostDiff.saveAddItems, ...dbDiff.saveAddItems]
+    // console.log(mappingIdList.value, 'save-delete')
+    // console.log(mappingBOList.value, 'save-add')
 
     if (mappingIdList.value.length === 0 && mappingBOList.value.length === 0) {
         message.warning('暂无可保存数据')
@@ -385,11 +424,16 @@ const handleSave = async (type: string = '1') => {
             message.success('保存成功')
             setTimeout(() => {
                 if (type === '1') {
-                    updateDetails()
+                    // 保存确认时，把临时完整覆盖给原始
+                    originalHostResource.value = new Map(tempHostResource.value)
+                    originalDBResource.value = new Map(tempDBResource.value)
+                    // 保存后清空mappingIdList和mappingBOList
+                    mappingIdList.value = []
+                    mappingBOList.value = []
                 } else {
                     handleCancel()
                 }
-            }, 500)
+            }, 1000)
         }
     } catch (err) {
         console.error(err)
@@ -404,35 +448,6 @@ const handleCancel = () => {
 onMounted(() => {
     getDetails()
 })
-const updateDetails = () => {
-    //保存后清空mappingIdList和mappingBOList
-    mappingIdList.value = []
-    mappingBOList.value = []
-    const { compDeploymentList, dbTypeList } = detailsData.value
-
-    compDeploymentList.forEach((item: any) => {
-        item.groupList.forEach((group: any) => {
-            group.resourceList = group.resourceList.map((resource: any) => {
-                if (resource.relationStatus === 'add') {
-                    resource.relationStatus = 'save'
-                }
-                return resource
-            })
-        })
-    })
-    dbTypeList.forEach((item: any) => {
-        item.dbSpecList.forEach((dbSpec: any) => {
-            dbSpec.specList.forEach((spec: any) => {
-                spec.resourceList = spec.resourceList.map((resource: any) => {
-                    if (resource.relationStatus === 'add') {
-                        resource.relationStatus = 'save'
-                    }
-                    return resource
-                })
-            })
-        })
-    })
-}
 
 const handleTabChange = (key: string) => {
     if (key === 'component') {
@@ -441,14 +456,14 @@ const handleTabChange = (key: string) => {
         searchForm.value.infrastructure = { instanceName: '', ip: '', port: '' }
     }
     // 切换、清空就相当于无关键词过滤，直接把源数据给视图
-    viewData.value = JSON.parse(JSON.stringify(detailsData.value))
+    viewData.value = detailsData.value
 }
 
 const handleSearch = () => {
     const form = searchForm.value[activeKey.value]
     const result = filterData(form, detailsData.value, activeKey.value)
     viewData.value = result
-    console.log('✅ 查询结果：', viewData.value)
+    // console.log('✅ 查询结果：', viewData.value)
 }
 
 const handleClear = () => {
