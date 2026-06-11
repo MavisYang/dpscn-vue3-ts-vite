@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-11 09:12:02
+ * @LastEditTime: 2026-06-11 09:53:49
  * @Description: 
 -->
 <template>
@@ -93,8 +93,8 @@ const showModal = (props: ModelProps) => {
         }
         selectedKeys = currentItem.resourceList.filter((r) => r.ip && r.port).map((v) => v.id)
     }
-    handleSearch({})
     onSelectRowChange(selectedKeys)
+    handleSearch({})
     open.value = true
 }
 
@@ -117,7 +117,7 @@ const getList = async (selectData: {}) => {
     const res = await fn(selectParams.value)
     const { code, data } = res
     if (code === '0000000') {
-        dataSource.value = dataSourceSort(data, envResourceIds.value)
+        dataSource.value = dataSourceSort(data, envResourceIds.value, selectedRowKeys.value)
         if (Object.keys(selectData).length === 0) {
             originalSource.value = data
         }

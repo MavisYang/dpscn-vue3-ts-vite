@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-06-08 09:43:11
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-10 16:09:27
+ * @LastEditTime: 2026-06-11 09:55:08
  * @Description:
  */
 /**
@@ -30,19 +30,24 @@ export const getAllResourceIds = (detailsData: any, activeKey: string) => {
     }
 }
 // 选择主机排序，将已被选中的项置顶，同时保持选中项和未选中项内部的原始相对顺序不变。
-export const dataSourceSort = (data: any, envResourceIds: any) => {
+export const dataSourceSort = (data: any, envResourceIds: any, selectedRowKeys: string[]) => {
     return data
         .map((item, index) => ({
             ...item,
             selectedFlag: envResourceIds.includes(item.id),
+            selected: selectedRowKeys.includes(item.id),
             _originIndex: index, // 临时记录原始顺序
         }))
         .sort((a: any, b: any) => {
-            // 1. 首先按 selectedFlag 降序，true 在前
+            // 1.首先按选中selected排序，true 在前
+            if (a.selected !== b.selected) {
+                return b.selected - a.selected
+            }
+            // 2. 首先按 selectedFlag 降序，true 在前
             if (b.selectedFlag !== a.selectedFlag) {
                 return b.selectedFlag - a.selectedFlag
             }
-            // 2. 如果 selectedFlag 相同，则按原始索引升序，保持原顺序
+            // 3. 如果 selectedFlag 相同，则按原始索引升序，保持原顺序
             return a._originIndex - b._originIndex
         })
         .map(({ _originIndex, ...rest }) => rest) // 最后一步剔除临时的 _originIndex 字段（可选，保持数据干净）
