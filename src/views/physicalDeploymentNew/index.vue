@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-03 17:13:55
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-10 16:19:04
+ * @LastEditTime: 2026-06-11 09:12:07
  * @Description: ARM物理部署映射
 -->
 <template>
@@ -283,7 +283,7 @@ const handleAdd = (event: any) => {
         resourceIds,
         activeKey: activeKey.value,
     }
-    addResourceModalRef.value?.showModel(params)
+    addResourceModalRef.value?.showModal(params)
 }
 
 // 更新数据（包括新增删除）
@@ -384,7 +384,7 @@ const handleUpdateData = (newGroupRecord: any) => {
         const targetKey = `${path}&&&${currentGroupKey}&&&${verLogicalDeploymentArchId}`
         tempDBResource.value.set(targetKey, [...currentResource])
     }
-    addResourceModalRef.value?.hideModel()
+    addResourceModalRef.value?.hideModal()
     // 新增后立刻重新执行搜索，刷新视图
     nextTick(() => {
         handleSearch()

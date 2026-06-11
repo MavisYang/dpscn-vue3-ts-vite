@@ -2,7 +2,7 @@
  * @Author: yangmiaomiao
  * @Date: 2026-04-08 09:46:09
  * @LastEditors: yangmiaomiao
- * @LastEditTime: 2026-06-10 18:34:51
+ * @LastEditTime: 2026-06-11 09:12:02
  * @Description: 
 -->
 <template>
@@ -12,6 +12,7 @@
         title="配置详情"
         :width="1360"
         :style="{ maxWidth: 'none', top: '20px' }"
+        @cancel="hideModal"
     >
         <div class="pd-modal-body">
             <ModalLeftInfo :active-type="activeType" :active-data="currentItem" />
@@ -30,7 +31,7 @@
 
         <template #footer>
             <div class="modal-footer">
-                <a-button @click="hideModel">取消</a-button>
+                <a-button @click="hideModal">取消</a-button>
                 <a-button type="primary" @click="handleConfirm">确定</a-button>
             </div>
         </template>
@@ -65,7 +66,7 @@ interface ModelProps {
     resourceIds: string[]
     activeKey: string
 }
-const showModel = (props: ModelProps) => {
+const showModal = (props: ModelProps) => {
     const { record, softAppId, softAppCode, verLogicalDeploymentArchId, resourceIds, activeKey } = props
     activeType.value = activeKey
     envResourceIds.value = resourceIds
@@ -97,7 +98,7 @@ const showModel = (props: ModelProps) => {
     open.value = true
 }
 
-const hideModel = () => {
+const hideModal = () => {
     Object.assign(currentItem, {})
     expandedRowKeys.value = []
     selectedRowKeys.value = []
@@ -176,8 +177,8 @@ const handleConfirm = () => {
     }, 300)
 }
 defineExpose({
-    showModel,
-    hideModel,
+    showModal,
+    hideModal,
 })
 </script>
 
